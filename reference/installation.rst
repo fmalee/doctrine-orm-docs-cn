@@ -1,5 +1,4 @@
-Installation
+安装
 ============
 
-The installation chapter has moved to `Installation and Configuration
-<reference/configuration>`_.
+安装章节已移至 `安装和配置 <reference/configuration>`_。
