@@ -1,7 +1,7 @@
-Welcome to Doctrine 2 ORM's documentation!
+欢迎使用Doctrine 2 ORM文档！
 ==========================================
 
-Tutorials
+教程
 ---------
 
 .. toctree::
@@ -18,7 +18,7 @@ Tutorials
    tutorials/pagination.rst
    tutorials/embeddables.rst
 
-Reference Guide
+参考指南
 ---------------
 
 .. toctree::
@@ -59,9 +59,9 @@ Reference Guide
    reference/advanced-configuration
    reference/second-level-cache
    reference/security
-   
 
-Cookbook
+
+主题
 --------
 
 .. toctree::
@@ -84,4 +84,3 @@ Cookbook
    cookbook/mysql-enums
    cookbook/advanced-field-value-conversion-using-custom-mapping-types
    cookbook/entities-in-session
-
