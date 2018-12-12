@@ -1,60 +1,43 @@
-Association Updates: Owning Side and Inverse Side
+关联的更新：拥有方和从属方
 =================================================
 
-When mapping bidirectional associations it is important to
-understand the concept of the owning and inverse sides. The
-following general rules apply:
+在映射双向关联时，理解拥有方(owning side)和从属方(inverse side)的概念很重要。
+以下是适用的通用规则：
 
--  Relationships may be bidirectional or unidirectional.
--  A bidirectional relationship has both an owning side and an inverse side
--  A unidirectional relationship only has an owning side.
--  Doctrine will **only** check the owning side of an association for changes.
+-  关系可以是 *双向* 或 *单向*。
+-  一个 **双向** 关系具有 *拥有*方 和 *从属* 方
+-  一个 **单向** 关系只有一个 *拥有* 方。
+-  Doctrine **只会** 检查一个关联的 *拥有* 方是否有变更。
 
-Bidirectional Associations
+双向关联
 --------------------------
 
-The following rules apply to **bidirectional** associations:
+以下规则适用于 **双向** 关联：
 
-- The inverse side has to have the ``mappedBy`` attribute of the OneToOne,
-  OneToMany, or ManyToMany mapping declaration. The mappedBy
-  attribute contains the name of the association-field on the owning side.
-- The owning side has to have the ``inversedBy`` attribute of the
-  OneToOne, ManyToOne, or ManyToMany mapping declaration. 
-  The inversedBy attribute contains the name of the association-field
-  on the inverse-side.
-- ManyToOne is always the owning side of a bidirectional association.
-- OneToMany is always the inverse side of a bidirectional association.
-- The owning side of a OneToOne association is the entity with the table
-  containing the foreign key.
-- You can pick the owning side of a many-to-many association yourself.
+- *从属* 方必须在 ``OneToOne``、``OneToMany`` 或 ``ManyToMany`` 映射声明上标注 ``mappedBy`` 属性。
+  ``mappedBy`` 属性包含 *拥有* 方的关联字段的名称。
+- *拥有* 方必须在 ``OneToOne``、``ManyToOne`` 或 ``ManyToMany`` 映射声明上标注 ``inversedBy`` 属性。
+   ``inversedBy`` 属性包含 *从属* 方的关联字段的名称。
+- ``ManyToOne`` 始终是一个 **双向** 关联的 *拥有* 方。
+- ``OneToMany`` 始终是一个 **双向** 关联的 *从属* 方。
+- 一个 ``OneToOne`` 关联的 *拥有* 方是包含外键的表的实体。
+- 你可以自己选择 **多对多** 关联的 *拥有* 方。
 
-Important concepts
+重要概念
 ------------------
 
-**Doctrine will only check the owning side of an association for changes.**
+**Doctrine只会检查关联的拥有方是否有变更。**
 
-To fully understand this, remember how bidirectional associations
-are maintained in the object world. There are 2 references on each
-side of the association and these 2 references both represent the
-same association but can change independently of one another. Of
-course, in a correct application the semantics of the bidirectional
-association are properly maintained by the application developer
-(that's his responsibility). Doctrine needs to know which of these
-two in-memory references is the one that should be persisted and
-which not. This is what the owning/inverse concept is mainly used
-for.
+要完全理解这一点，请记住在对象世界中是如何维护 **双向** 关联的。
+关联的每一方有 ``2`` 个引用，这两个引用都代表相同的关联，但可以彼此独立地改变。
+当然，在得体的应用中，双向关联的语义由应用开发人员恰当地维护（这是他的职责）。
+Doctrine需要知道这两个内存引用中的哪一个应该持久化，哪个不用。这就是拥有/从属概念主要适用的地方。
 
-**Changes made only to the inverse side of an association are ignored. Make sure to update both sides of a bidirectional association (or at least the owning side, from Doctrine's point of view)**
+**将忽略仅对关联的从属方所做的更改。请确保更新双向关联的两方，或者至少更新拥有方（从Doctrine的角度）**
 
-The owning side of a bidirectional association is the side Doctrine
-"looks at" when determining the state of the association, and
-consequently whether there is anything to do to update the
-association in the database.
+一个 **双向** 关联的 *拥有* 方是在确定关联状态时Doctrine“查看”的那一方，以及因此是否需要做任何事情来更新数据库中的关联。
 
 .. note::
 
-    "Owning side" and "inverse side" are technical concepts of
-    the ORM technology, not concepts of your domain model. What you
-    consider as the owning side in your domain model can be different
-    from what the owning side is for Doctrine. These are unrelated.
-
+    “拥有方”和“从属方”是ORM技术的技术概念，而不是域模型的概念。
+    你认知的域模型中的拥有方可能与Doctrine的拥有方不同。它们是无关的。
