@@ -1,39 +1,35 @@
-Association Mapping
+关联映射
 ===================
 
-This chapter explains mapping associations between objects.
+本章介绍了对象之间的映射关联。
 
-Instead of working with foreign keys in your code, you will always work with
-references to objects instead and Doctrine will convert those references
-to foreign keys internally.
+你将始终使用对象的引用而不是在代码中使用外键，而Doctrine将在内部将这些引用转换为外键。
 
-- A reference to a single object is represented by a foreign key.
-- A collection of objects is represented by many foreign keys pointing to the object holding the collection
+- 一个由外键代表的对单个对象的引用。
+- 一个由指向持有集合的对象的许多外键代表的对象集合
 
-This chapter is split into three different sections.
+本章分为三个不同的部分。
 
-- A list of all the possible association mapping use-cases is given.
-- :ref:`association_mapping_defaults` are explained that simplify the use-case examples.
-- :ref:`collections` are introduced that contain entities in associations.
+- 给出了所有可能的关联映射的用例的列表。
+- 解释了 :ref:`association_mapping_defaults`，简化了示例。
+- 引入了包含关联实体的 :ref:`collections`。
 
-One tip for working with relations is to read the relation from left to right, where the left word refers to the current Entity. For example:
+处理关联关系的一个技巧是从 **左** 到 **右** 读取关系，其中 *左* 这个词指的是当前实体。例如：
 
-- OneToMany - One instance of the current Entity has Many instances (references) to the refered Entity.
-- ManyToOne - Many instances of the current Entity refer to One instance of the refered Entity.
-- OneToOne - One instance of the current Entity refers to One instance of the refered Entity.
+- ``OneToMany`` - 当前实体的 *一个* 实例具有 *许多* 指向已引用(refered)实体的实例（引用）。
+- ``ManyToOne`` - 当前实体的 *许多* 实例引用已引用(refered)实体的 *一个* 实例。
+- ``OneToOne`` - 当前实体的 *一个* 实例引用已引用(refered)实体的 *一个* 实例。
 
-See below for all the possible relations. 
+请参阅下面的所有可能的关联关系。
 
-An association is considered to be unidirectional if only one side of the association has 
-a property referring to the other side.
+如果 *仅* 一个关联的一方具有指向另一方的属性，则认为此关联是 **单向** 的。
 
-To gain a full understanding of associations you should also read about :doc:`owning and
-inverse sides of associations <unitofwork-associations>`
+要充分了解关联，你还应该阅读 :doc:`关联的拥有方和从属方 <unitofwork-associations>`
 
-Many-To-One, Unidirectional
+单向多对一
 ---------------------------
 
-A many-to-one association is the most common association between objects. Example: Many Users have One Address:
+**多对一** 关联是对象之间最常见的关联。*许多* ``User`` 拥有 *一个* ``Address`` 的示例：
 
 .. configuration-block::
 
@@ -82,11 +78,10 @@ A many-to-one association is the most common association between objects. Exampl
 
 .. note::
 
-    The above ``@JoinColumn`` is optional as it would default
-    to ``address_id`` and ``id`` anyways. You can omit it and let it
-    use the defaults.
+    上面的 ``@JoinColumn`` 是可选的，因为它始终默认为
+    ``address_id`` 和 ``id``。所以你可以省略它以使用默认值。
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -103,11 +98,10 @@ Generated MySQL Schema:
 
     ALTER TABLE User ADD FOREIGN KEY (address_id) REFERENCES Address(id);
 
-One-To-One, Unidirectional
+单向一对一
 --------------------------
 
-Here is an example of a one-to-one association with a ``Product`` entity that
-references one ``Shipment`` entity.
+以下是一个 ``Product`` 实体引用一个 ``Shipment`` 实体的 **一对一** 关联的示例。
 
 .. configuration-block::
 
@@ -156,10 +150,9 @@ references one ``Shipment`` entity.
                 name: shipment_id
                 referencedColumnName: id
 
-Note that the @JoinColumn is not really necessary in this example,
-as the defaults would be the same.
+请注意，在此示例中并不真正需要 ``@JoinColumn``，因为该注释与默认值是相同的。
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -175,16 +168,14 @@ Generated MySQL Schema:
     ) ENGINE = InnoDB;
     ALTER TABLE Product ADD FOREIGN KEY (shipment_id) REFERENCES Shipment(id);
 
-One-To-One, Bidirectional
+双向一对一
 -------------------------
 
-Here is a one-to-one relationship between a ``Customer`` and a
-``Cart``. The ``Cart`` has a reference back to the ``Customer`` so
-it is bidirectional.
+这是一个 ``Customer`` 实体和一个 ``Cart`` 实体之间的 **一对一** 关系。
+``Cart`` 同时具有一个 ``Customer`` 的引用，所以该关系是双向的。
 
-Here we see the ``mappedBy`` and ``inversedBy`` annotations for the first time.
-They are used to tell Doctrine which property on the other side refers to the
-object.
+在这里，我们第一次看到 ``mappedBy`` 和 ``inversedBy`` 注释。
+它们用于告诉Doctrine另一方的哪个属性引用该对象。
 
 .. configuration-block::
 
@@ -249,10 +240,9 @@ object.
                 name: customer_id
                 referencedColumnName: id
 
-Note that the @JoinColumn is not really necessary in this example,
-as the defaults would be the same.
+请注意，在此示例中并不真正需要 ``@JoinColumn``，因为该注释与默认值是相同的。
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -267,19 +257,16 @@ Generated MySQL Schema:
     ) ENGINE = InnoDB;
     ALTER TABLE Cart ADD FOREIGN KEY (customer_id) REFERENCES Customer(id);
 
-We had a choice of sides on which to place the ``inversedBy`` attribute. Because it
-is on the ``Cart``, that is the owning side of the relation, and thus holds the
-foreign key.
+我们可以选择将 ``inversedBy`` 属性放置在哪一方。
+因为它放置在 ``Cart`` 类上，则意味着它是关系的拥有方，因此持有外键。
 
-One-To-One, Self-referencing
+自引用的一对一
 ----------------------------
 
-You can define a self-referencing one-to-one relationships like
-below.
+你可以定义一个 *自引用* 的 **一对一** 关系，如下所示：
 
 .. code-block:: php
 
-    <?php
     /** @Entity */
     class Student
     {
@@ -295,10 +282,9 @@ below.
         // ...
     }
 
-Note that the @JoinColumn is not really necessary in this example,
-as the defaults would be the same.
+请注意，在此示例中并不真正需要 ``@JoinColumn``，因为该注释与默认值是相同的。
 
-With the generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -309,19 +295,15 @@ With the generated MySQL Schema:
     ) ENGINE = InnoDB;
     ALTER TABLE Student ADD FOREIGN KEY (mentor_id) REFERENCES Student(id);
 
-One-To-Many, Bidirectional
+双向一对多
 --------------------------
 
-A one-to-many association has to be bidirectional, unless you are using a
-join table. This is because the many side in a one-to-many association holds
-the foreign key, making it the owning side. Doctrine needs the many side
-defined in order to understand the association.
+除非你使用了一个连接表，否则 **一对多** 关联 *必须* 是 *双向* 的。
+这是因为一对多关联中的 *多* 方持有外键，从而使其成为拥有方。Doctrine需要定义 *多* 方以理解此关联。
 
-This bidirectional mapping requires the ``mappedBy`` attribute on the
-"one" side and the ``inversedBy`` attribute on the "many" side.
+这种 **双向** 映射在 *一* 方需要 ``mappedBy`` 属性，在 *多* 方需要 ``inversedBy`` 属性。
 
-This means there is no difference between a bidirectional one-to-many and a
-bidirectional many-to-one.
+这意味着 **双向一对多** 和 **双向多对一** 之间 *没有* 区别的。
 
 .. configuration-block::
 
@@ -390,10 +372,9 @@ bidirectional many-to-one.
                 name: product_id
                 referencedColumnName: id
 
-Note that the @JoinColumn is not really necessary in this example,
-as the defaults would be the same.
+请注意，在此示例中并不真正需要 ``@JoinColumn``，因为该注释与默认值是相同的。
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -408,15 +389,13 @@ Generated MySQL Schema:
     ) ENGINE = InnoDB;
     ALTER TABLE Feature ADD FOREIGN KEY (product_id) REFERENCES Product(id);
 
-One-To-Many, Unidirectional with Join Table
+使用连接表的单向一对多
 -------------------------------------------
 
-A unidirectional one-to-many association can be mapped through a
-join table. From Doctrine's point of view, it is simply mapped as a
-unidirectional many-to-many whereby a unique constraint on one of
-the join columns enforces the one-to-many cardinality.
+可以通过一个 *连接表* 来映射 **单向一对多** 关联。
+从Doctrine的角度来看，它被简单地映射为 **单向多对多**，其中一个连接列上的唯一约束强制执行一对多基数(cardinality)。
 
-The following example sets up such a unidirectional one-to-many association:
+以下示例设置了这种单向一对多关联：
 
 .. configuration-block::
 
@@ -486,8 +465,7 @@ The following example sets up such a unidirectional one-to-many association:
                     referencedColumnName: id
                     unique: true
 
-
-Generates the following MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -511,14 +489,12 @@ Generates the following MySQL Schema:
     ALTER TABLE users_phonenumbers ADD FOREIGN KEY (user_id) REFERENCES User(id);
     ALTER TABLE users_phonenumbers ADD FOREIGN KEY (phonenumber_id) REFERENCES Phonenumber(id);
 
-One-To-Many, Self-referencing
+自引用的一对多
 -----------------------------
 
-You can also setup a one-to-many association that is
-self-referencing. In this example we setup a hierarchy of
-``Category`` objects by creating a self referencing relationship.
-This effectively models a hierarchy of categories and from the
-database perspective is known as an adjacency list approach.
+你还可以设置 *自引用* 的 **一对多** 关联。
+在此示例中，我们通过创建一个自引用关系来设置 ``Category`` 对象的层级。
+这有效地模拟了类别的层级，而从数据库的角度来看，这被称为一个 **邻接表方法**。
 
 .. configuration-block::
 
@@ -570,10 +546,9 @@ database perspective is known as an adjacency list approach.
               targetEntity: Category
               inversedBy: children
 
-Note that the @JoinColumn is not really necessary in this example,
-as the defaults would be the same.
+请注意，在此示例中并不真正需要 ``@JoinColumn``，因为该注释与默认值是相同的。
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -584,12 +559,10 @@ Generated MySQL Schema:
     ) ENGINE = InnoDB;
     ALTER TABLE Category ADD FOREIGN KEY (parent_id) REFERENCES Category(id);
 
-Many-To-Many, Unidirectional
+单向多对多
 ----------------------------
 
-Real many-to-many associations are less common. The following
-example shows a unidirectional association between User and Group
-entities:
+真正的多对多关联不太常见。以下示例展示了 ``User`` 和 ``Group`` 实体之间的 **单向** 关联：
 
 .. configuration-block::
 
@@ -657,7 +630,7 @@ entities:
                   group_id:
                     referencedColumnName: id
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -679,18 +652,13 @@ Generated MySQL Schema:
 
 .. note::
 
-    Why are many-to-many associations less common? Because
-    frequently you want to associate additional attributes with an
-    association, in which case you introduce an association class.
-    Consequently, the direct many-to-many association disappears and is
-    replaced by one-to-many/many-to-one associations between the 3
-    participating classes.
+    为什么多对多关联不太常见？因为你经常要关联其他属性到一个关联，所以在这种情况下，你会引入一个关联类。
+    因此，*直接* 的多对多关联消失，并被 *3* 个参与类之间的一对多/多对一关联所取代。
 
-Many-To-Many, Bidirectional
+双向多对多
 ---------------------------
 
-Here is a similar many-to-many relationship as above except this
-one is bidirectional.
+这是一个类似多对多的关系，除了它是双向的。
 
 .. configuration-block::
 
@@ -778,38 +746,30 @@ one is bidirectional.
               targetEntity: User
               mappedBy: groups
 
-The MySQL schema is exactly the same as for the Many-To-Many
-uni-directional case above.
+MySQL的模式与上面的 *单向多对多* 示例完全相同。
 
-Owning and Inverse Side on a ManyToMany Association
+多对多关联的拥有方和从属方
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For Many-To-Many associations you can chose which entity is the
-owning and which the inverse side. There is a very simple semantic
-rule to decide which side is more suitable to be the owning side
-from a developers perspective. You only have to ask yourself which
-entity is responsible for the connection management, and pick that
-as the owning side.
+对于 **多对多** 关联时，你可以选择哪个实体是 *拥有* 方，哪个实体是 *从属* 方。
+从开发人员的角度来看，有一个非常简单的语义规则来决定哪一方更适合作为 *拥有* 方。
+你只需要问自己负责连接管理的是哪个实体，然后选择它作为 *拥有* 方。
 
-Take an example of two entities ``Article`` and ``Tag``. Whenever
-you want to connect an Article to a Tag and vice-versa, it is
-mostly the Article that is responsible for this relation. Whenever
-you add a new article, you want to connect it with existing or new
-tags. Your "Create Article" form will probably support this notion
-and allow specifying the tags directly. This is why you should pick
-the Article as owning side, as it makes the code more
-understandable:
+就拿 ``Article`` 和 ``Tag`` 这两个实体作为示例。
+无论何时你都是想要将一个 ``Article`` 连接到一个 ``Tag``，反之亦然，主要是 ``Article`` 负责这种关系。
+每当你添加新文章时，你都希望将其与现有标签或新标签相关联。
+你的“创建文章”表单可能会支持此概念并允许直接指定标签。
+这就是为什么你应该选择 ``Article`` 作为 *拥有* 方，因为它使代码更容易理解：
 
 .. code-block:: php
 
-    <?php
     class Article
     {
         private $tags;
 
         public function addTag(Tag $tag)
         {
-            $tag->addArticle($this); // synchronously updating inverse side
+            $tag->addArticle($this); // 同步更新从属方
             $this->tags[] = $tag;
         }
     }
@@ -824,28 +784,24 @@ understandable:
         }
     }
 
-This allows to group the tag adding on the ``Article`` side of the
-association:
+这将允许在关联的 ``Article`` 方对标签添加进行分组：
 
 .. code-block:: php
 
-    <?php
     $article = new Article();
     $article->addTag($tagA);
     $article->addTag($tagB);
 
-Many-To-Many, Self-referencing
+自引用的多对多
 ------------------------------
 
-You can even have a self-referencing many-to-many association. A
-common scenario is where a ``User`` has friends and the target
-entity of that relationship is a ``User`` so it is self
-referencing. In this example it is bidirectional so ``User`` has a
-field named ``$friendsWithMe`` and ``$myFriends``.
+你甚至可以拥有一个 *自引用* 的 **多对多** 关联。
+一个常见的场景是，一个 ``User`` 有好友关系，而该关系的目标实体是一个 ``User``，因此它是自引用。
+
+在这个例子中，该关联是双向的，因此一个 ``User`` 有一个名为 ``$friendsWithMe`` 的字段和 ``$myFriends`` 关系。
 
 .. code-block:: php
 
-    <?php
     /** @Entity */
     class User
     {
@@ -875,7 +831,7 @@ field named ``$friendsWithMe`` and ``$myFriends``.
         // ...
     }
 
-Generated MySQL Schema:
+生成的MySQL模式：
 
 .. code-block:: sql
 
@@ -893,19 +849,18 @@ Generated MySQL Schema:
 
 .. _association_mapping_defaults:
 
-Mapping Defaults
+映射的默认值
 ----------------
 
-The ``@JoinColumn`` and ``@JoinTable`` definitions are usually optional and have
-sensible default values. The defaults for a join column in a
-one-to-one/many-to-one association is as follows:
+``@JoinColumn`` 和 ``@JoinTable`` 定义通常是可选的，并且具有合理的默认值。
+一对一/多对一关联中的连接列的默认值如下：
 
 ::
 
     name: "<fieldname>_id"
     referencedColumnName: "id"
 
-As an example, consider this mapping:
+作为示例，请思考以下映射：
 
 .. configuration-block::
 
@@ -931,8 +886,7 @@ As an example, consider this mapping:
             shipment:
               targetEntity: Shipment
 
-This is essentially the same as the following, more verbose,
-mapping:
+这与以下更详细的映射基本相同：
 
 .. configuration-block::
 
@@ -967,8 +921,7 @@ mapping:
                 name: shipment_id
                 referencedColumnName: id
 
-The @JoinTable definition used for many-to-many mappings has
-similar defaults. As an example, consider this mapping:
+用于 **多对多** 映射的 ``@JoinTable`` 定义具有类似的默认值。作为示例，请思考以下映射：
 
 .. configuration-block::
 
@@ -999,7 +952,7 @@ similar defaults. As an example, consider this mapping:
             groups:
               targetEntity: Group
 
-This is essentially the same as the following, more verbose, mapping:
+这与以下更详细的映射基本相同：
 
 .. configuration-block::
 
@@ -1054,47 +1007,36 @@ This is essentially the same as the following, more verbose, mapping:
                   Group_id:
                     referencedColumnName: id
 
-In that case, the name of the join table defaults to a combination
-of the simple, unqualified class names of the participating
-classes, separated by an underscore character. The names of the
-join columns default to the simple, unqualified class name of the
-targeted class followed by "\_id". The referencedColumnName always
-defaults to "id", just as in one-to-one or many-to-one mappings.
+在这个例子中，连接表的名称默认为参与类的简单、非限定类名称的组合，并用下划线（``_``）字符分隔。
+连接列的名称默认为目标类的简单、非限定类名，在附加 ``_id``。
+``referencedColumnName`` 始终默认为 ``id``，就像在一对一或多对一映射中一样。
 
-If you accept these defaults, you can reduce the mapping code to a
-minimum.
+如果你接受了这些默认值，则可以将映射代码减少到最小。
 
 .. _collections:
 
-Collections
+集合
 -----------
 
-Unfortunately, PHP arrays, while being great for many things, are missing
-features that make them suitable for lazy loading in the context of an ORM.
-This is why in all the examples of many-valued associations in this manual we
-will make use of a ``Collection`` interface and its
-default implementation ``ArrayCollection`` that are both defined in the
-``Doctrine\Common\Collections`` namespace. A collection implements
-the PHP interfaces ``ArrayAccess``, ``Traversable`` and ``Countable``.
+PHP数组大多数情况下都很好用，但不幸的是，缺少使它们适合在ORM上下文中进行延迟加载的功能。
+这就是为什么在本手册中的多值关联的所有示例中，我们使用了一个 ``ArrayCollection``。
+该默认实现了 ``Collection`` 接口，并且这两个类都定义在 ``Doctrine\Common\Collections`` 命名空间下。
+一个集合实现了PHP的 ``ArrayAccess``、``Traversable`` 以及 ``Countable`` 接口.
 
 .. note::
 
-    The Collection interface and ArrayCollection class,
-    like everything else in the Doctrine namespace, are neither part of
-    the ORM, nor the DBAL, it is a plain PHP class that has no outside
-    dependencies apart from dependencies on PHP itself (and the SPL).
-    Therefore using this class in your model and elsewhere
-    does not introduce a coupling to the ORM.
+    ``Collection`` 接口和 ``ArrayCollection``
+    类与Doctrine命名空间中的其他所有类一样，既不是 ``ORM`` 的一部分，也不是 ``DBAL``
+    的一部分，它们是一个普通的PHP类，除了依赖PHP本身（和 ``SPL``）之外没有外部依赖。
+    因此，在你的模型和其他地方使用此类时不会产生与 ``ORM`` 的耦合。
 
-Initializing Collections
+初始化集合
 ------------------------
 
-You should always initialize the collections of your ``@OneToMany``
-and ``@ManyToMany`` associations in the constructor of your entities:
+你应该始终在实体的构造函数中初始化你的 ``@OneToMany`` 和 ``@ManyToMany`` 关联的集合：
 
 .. code-block:: php
 
-    <?php
     use Doctrine\Common\Collections\Collection;
     use Doctrine\Common\Collections\ArrayCollection;
 
@@ -1119,8 +1061,7 @@ and ``@ManyToMany`` associations in the constructor of your entities:
         }
     }
 
-The following code will then work even if the Entity hasn't
-been associated with an EntityManager yet:
+即使该实体尚未与一个 ``EntityManager`` 关联，以下代码也将起作用：
 
 .. code-block:: php
 
