@@ -1,15 +1,13 @@
-Pagination
+分页
 ==========
 
 .. versionadded:: 2.2
 
-Starting with version 2.2 Doctrine ships with a Paginator for DQL queries. It
-has a very simple API and implements the SPL interfaces ``Countable`` and
-``IteratorAggregate``.
+从2.2版本开始，Doctrine附带了一个用于 ``DQL`` 查询的 ``Paginator``。
+它有一个非常简单的API，并实现了 ``Countable`` 和 ``IteratorAggregate`` SPL接口。
 
 .. code-block:: php
 
-    <?php
     use Doctrine\ORM\Tools\Pagination\Paginator;
 
     $dql = "SELECT p, c FROM BlogPost p JOIN p.comments c";
@@ -24,20 +22,16 @@ has a very simple API and implements the SPL interfaces ``Countable`` and
         echo $post->getHeadline() . "\n";
     }
 
-Paginating Doctrine queries is not as simple as you might think in the
-beginning. If you have complex fetch-join scenarios with one-to-many or
-many-to-many associations using the "default" LIMIT functionality of database
-vendors is not sufficient to get the correct results.
+Doctrine分页查询并不像你在开始时想到的那么简单。
+如果你具有使用数据库供应商的“默认” ``LIMIT`` 功能的 **一对多**
+或 **多对多** 关联的复杂提取连接(fetch-join)方案，则不足以获得正确的结果。
 
-By default the pagination extension does the following steps to compute the
-correct result:
+默认情况下，该分页扩展会执行以下步骤来计算正确的结果：
 
-- Perform a Count query using `DISTINCT` keyword.
-- Perform a Limit Subquery with `DISTINCT` to find all ids of the entity in from on the current page.
-- Perform a WHERE IN query to get all results for the current page.
+- 使用 `DISTINCT` 关键字执行一个 ``Count`` 查询。
+- 使用 `DISTINCT` 执行一个限制子查询，以在当前页面上查找实体的所有ID。
+- 执行一个 ``WHERE IN`` 查询以获取当前页面的所有结果。
 
-This behavior is only necessary if you actually fetch join a to-many
-collection. You can disable this behavior by setting the
-``$fetchJoinCollection`` flag to ``false``; in that case only 2 instead of the 3 queries
-described are executed. We hope to automate the detection for this in
-the future.
+仅当你实际获取加入多对多集合时，才需要此行为。
+你可以通过将 ``$fetchJoinCollection`` 标志设置为禁用此行为 ``false``;
+在这种情况下，只执行 **2** 个而不是所描述的 **3** 个查询。我们希望将来能够自动进行检测。

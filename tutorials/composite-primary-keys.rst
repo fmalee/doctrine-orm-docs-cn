@@ -1,27 +1,24 @@
-Composite and Foreign Keys as Primary Key
+复合和外键作为主键
 =========================================
 
 .. versionadded:: 2.1
 
-Doctrine 2 supports composite primary keys natively. Composite keys are a very powerful relational database concept
-and we took good care to make sure Doctrine 2 supports as many of the composite primary key use-cases.
-For Doctrine 2.0 composite keys of primitive data-types are supported, for Doctrine 2.1 even foreign keys as
-primary keys are supported.
+Doctrine2原生支持复合主键。复合键是一个非常强大的关系数据库概念，我们非常注意确保Doctrine2支持尽可能多的复合主键用例。
+对于Doctrine2.0，支持原始数据类型的复合键，Doctrine2.1甚至支持外键作为主键。
 
-This tutorial shows how the semantics of composite primary keys work and how they map to the database.
+本教程将介绍复合主键的语义如何工作以及它们如何映射到数据库。
 
-General Considerations
+一般事项
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Every entity with a composite key cannot use an id generator other than "NONE". That means
-the ID fields have to have their values set before you call ``EntityManager#persist($entity)``.
+具有复合键的每个实体都不能使用除 ``NONE`` 之外的id生成器。
+这意味着必须在调用 ``EntityManager#persist($entity)`` 之前设置该ID字段的值。
 
-Primitive Types only
+仅限原始类型
 ~~~~~~~~~~~~~~~~~~~~
 
-Even in version 2.0 you can have composite keys as long as they only consist of the primitive types
-``integer`` and ``string``. Suppose you want to create a database of cars and use the model-name
-and year of production as primary keys:
+即使在2.0版本中，只要它们只包含基本类型 ``integer`` 和 ``string``，你就可以拥有复合键。
+假设你要创建汽车数据库并使用型号名称和生产年份作为主键：
 
 .. configuration-block::
 
@@ -81,27 +78,25 @@ and year of production as primary keys:
             year:
               type: integer
 
-Now you can use this entity:
+现在你可以使用此实体：
 
 .. code-block:: php
 
-    <?php
     namespace VehicleCatalogue\Model;
 
-    // $em is the EntityManager
+    // $em 既是 EntityManager
 
     $car = new Car("Audi A8", 2010);
     $em->persist($car);
     $em->flush();
 
-And for querying you can use arrays to both DQL and EntityRepositories:
+对于查询，你可以将数组用于 ``DQL`` 和 ``EntityRepositories``：
 
 .. code-block:: php
 
-    <?php
     namespace VehicleCatalogue\Model;
 
-    // $em is the EntityManager
+    // $em 既是 EntityManager
     $audi = $em->find("VehicleCatalogue\Model\Car", array("name" => "Audi A8", "year" => 2010));
 
     $dql = "SELECT c FROM VehicleCatalogue\Model\Car c WHERE c.id = ?1";
@@ -109,42 +104,38 @@ And for querying you can use arrays to both DQL and EntityRepositories:
                ->setParameter(1, array("name" => "Audi A8", "year" => 2010))
                ->getSingleResult();
 
-You can also use this entity in associations. Doctrine will then generate two foreign keys one for ``name``
-and to ``year`` to the related entities.
+你还可以在关联中使用此实体。然后Doctrine会生成两个外键：``name`` 和 相关实体的 ``year``。
 
 .. note::
 
-    This example shows how you can nicely solve the requirement for existing
-    values before ``EntityManager#persist()``: By adding them as mandatory values for the constructor.
+    此示例展示了如何在 ``EntityManager#persist()`` 之前很好地解决现有值的要求：将它们添加为构造函数的必需值。
 
-Identity through foreign Entities
+通过外部实体进行标识
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
 
-    Identity through foreign entities is only supported with Doctrine 2.1
+    只有Doctrine 2.1支持通过外部实体进行进行标识
 
-There are tons of use-cases where the identity of an Entity should be determined by the entity
-of one or many parent entities.
+这里有大量的用例，其中一个实体的标识应由一个或多个父实体的实体确定。
 
--   Dynamic Attributes of an Entity (for example Article). Each Article has many
-    attributes with primary key "article_id" and "attribute_name".
--   Address object of a Person, the primary key of the address is "user_id". This is not a case of a composite primary
-    key, but the identity is derived through a foreign entity and a foreign key.
--   Join Tables with metadata can be modelled as Entity, for example connections between two articles
-    with a little description and a score.
+-   一个实体的动态属性（例如 ``Article``）。
+    每个文章都有许多属性，主键为 ``article_id`` 和 ``attribute_name``。
+-   一个 ``Person`` 的 ``Address`` 对象，``address`` 的主键是 ``user_id``。
+    这不是复合主键的用例，但该标识是通过一个外部实体和一个外键派生的。
+-   具有元数据的连接表可以被建模为实体，例如具有少量描述和评分的两篇文章之间的连接。
 
-The semantics of mapping identity through foreign entities are easy:
+通过外部实体映射identity的语义很简单：
 
--   Only allowed on Many-To-One or One-To-One associations.
--   Plug an ``@Id`` annotation onto every association.
--   Set an attribute ``association-key`` with the field name of the association in XML.
--   Set a key ``associationKey:`` with the field name of the association in YAML.
+-   仅允许 *多对一* 或 *一对一* 关联。
+-   将 ``@Id`` 注释插入每个关联。
+-   使用XML中的关联字段名称设置一个 ``association-key`` 属性。
+-   在YAML中使用关联的字段名称设置一个 ``associationKey:`` 键。
 
-Use-Case 1: Dynamic Attributes
+用例1：动态属性
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We keep up the example of an Article with arbitrary attributes, the mapping looks like this:
+我们看看带有任意属性的文章的示例，该映射如下所示：
 
 .. configuration-block::
 
@@ -208,7 +199,7 @@ We keep up the example of an Article with arbitrary attributes, the mapping look
              <entity name="Application\Model\ArticleAttribute">
                 <id name="article" association-key="true" />
                 <id name="attribute" type="string" />
-                
+
                 <field name="value" type="string" />
 
                 <many-to-one field="article" target-entity="Article" inversed-by="attributes" />
@@ -234,12 +225,11 @@ We keep up the example of an Article with arbitrary attributes, the mapping look
               inversedBy: attributes
 
 
-Use-Case 2: Simple Derived Identity
+用例2：简单派生标识
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes you have the requirement that two objects are related by a One-To-One association
-and that the dependent class should re-use the primary key of the class it depends on.
-One good example for this is a user-address relationship:
+有时你需要两个对象通过一对一关联相关，并且依赖类应该重用它所依赖的类的主键。
+一个很好的例子是用户-地址关系：
 
 .. configuration-block::
 
@@ -284,16 +274,13 @@ One good example for this is a user-address relationship:
               targetEntity: User
 
 
-Use-Case 3: Join-Table with Metadata
+用例3：使用元数据连接表
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the classic order product shop example there is the concept of the order item
-which contains references to order and product and additional data such as the amount
-of products purchased and maybe even the current price.
+在经典订单产品商店示例中，订单商品的概念包含对订单和产品的引用以及其他数据，例如购买的产品数量，甚至可能是当前价格。
 
 .. code-block:: php
 
-    <?php
     use Doctrine\Common\Collections\ArrayCollection;
 
     /** @Entity */
@@ -363,13 +350,10 @@ of products purchased and maybe even the current price.
         }
     }
 
-
-Performance Considerations
+性能事项
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Using composite keys always comes with a performance hit compared to using entities with
-a simple surrogate key. This performance impact is mostly due to additional PHP code that is
-necessary to handle this kind of keys, most notably when using derived identifiers.
+与使用具有简单代理(surrogate)键的实体相比，使用复合键总是会带来性能损失。
+这种性能影响主要是由于处理这种键所需的额外PHP代码，最明显的是在使用派生标识符时。
 
-On the SQL side there is not much overhead as no additional or unexpected queries have to be
-executed to manage entities with derived foreign keys.
+在SQL端，没有太多开销，因为不必执行额外或意外的查询来管理具有派生外键的实体。
