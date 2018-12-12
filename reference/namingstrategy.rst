@@ -1,49 +1,45 @@
-Implementing a NamingStrategy
+实施命名策略
 ==============================
 
 .. versionadded:: 2.3
 
-Using a naming strategy you can provide rules for generating database identifiers,
-column or table names when the column or table name is not given. This feature helps
-reduce the verbosity of the mapping document, eliminating repetitive noise (eg: ``TABLE_``).
+使用一个命名策略，你可以在未给出列或表名称时提供规则来生成数据库的标识符、列或表名称。
+此功能有助于降低映射文档的详细程度，消除重复性噪声（例如 ``TABLE_``)。
 
-Configuring a naming strategy
+配置命名策略
 -----------------------------
-The default strategy used by Doctrine is quite minimal.
 
-By default the ``Doctrine\ORM\Mapping\DefaultNamingStrategy``
-uses the simple class name and the attribute names to generate tables and columns.
+Doctrine使用的默认策略非常简单。
 
-You can specify a different strategy by calling ``Doctrine\ORM\Configuration#setNamingStrategy()``:
+默认情况下，``Doctrine\ORM\Mapping\DefaultNamingStrategy`` 使用简单的类名和属性名来生成表和列。
+
+你可以通过调用 ``Doctrine\ORM\Configuration#setNamingStrategy()`` 方法来指定其他策略：
 
 .. code-block:: php
 
-    <?php
     $namingStrategy = new MyNamingStrategy();
     $configuration->setNamingStrategy($namingStrategy);
 
-Underscore naming strategy
+下划线命名策略
 ---------------------------
 
-``\Doctrine\ORM\Mapping\UnderscoreNamingStrategy`` is a built-in strategy.
+``\Doctrine\ORM\Mapping\UnderscoreNamingStrategy`` 是一个内置策略。
 
 .. code-block:: php
 
-    <?php
     $namingStrategy = new \Doctrine\ORM\Mapping\UnderscoreNamingStrategy(CASE_UPPER);
     $configuration->setNamingStrategy($namingStrategy);
 
-For SomeEntityName the strategy will generate the table SOME_ENTITY_NAME with the
-``CASE_UPPER`` option, or some_entity_name with the ``CASE_LOWER`` option.
+对于 ``SomeEntityName``，该策略将使用 ``CASE_UPPER`` 选项来生成
+``SOME_ENTITY_NAME`` 表，或用 ``CASE_LOWER`` 选项来生成 ``some_entity_name``。
 
-Naming strategy interface
+命名策略接口
 -------------------------
-The interface ``Doctrine\ORM\Mapping\NamingStrategy`` allows you to specify
-a naming strategy for database tables and columns.
+
+``Doctrine\ORM\Mapping\NamingStrategy`` 接口允许你为数据库表和列指定命名策略。
 
 .. code-block:: php
 
-    <?php
     /**
      * Return a table name for an entity class
      *
@@ -94,14 +90,13 @@ a naming strategy for database tables and columns.
      */
     function joinKeyColumnName($entityName, $referencedColumnName = null);
 
-Implementing a naming strategy
+实施命名策略
 -------------------------------
-If you have database naming standards, like all table names should be prefixed
-by the application prefix, all column names should be lower case, you can easily
-achieve such standards by implementing a naming strategy.
 
-You need to create a class which implements ``Doctrine\ORM\Mapping\NamingStrategy``.
+如果你有数据库的命名标准，例如，所有表名都应该以应用前缀为前缀，所有列名都应该是小写的。
+那么你可以通过实现一个命名策略来轻松实施这些标准。
 
+你需要创建一个实现了 ``Doctrine\ORM\Mapping\NamingStrategy`` 的类。
 
 .. code-block:: php
 
