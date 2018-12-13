@@ -1,405 +1,323 @@
-Doctrine Query Language
+Doctrine查询语言
 ===========================
 
-DQL stands for Doctrine Query Language and is an Object
-Query Language derivative that is very similar to the Hibernate
-Query Language (HQL) or the Java Persistence Query Language (JPQL).
+``DQL`` 既 **Doctrine Query Language **，这是一个 **对象查询语言** 的衍生物，与Hibernate查询语言（
+``HQL``）或Java持久性查询语言（``JPQL``）非常相似。
 
-In essence, DQL provides powerful querying capabilities over your
-object model. Imagine all your objects lying around in some storage
-(like an object database). When writing DQL queries, think about
-querying that storage to pick a certain subset of your objects.
+从本质上讲，``DQL`` 为你的 *对象模型* 提供了强大的查询功能。
+想象一下所有对象都存在于某个存储器中（如对象数据库）。
+编写 ``DQL`` 查询时，请考虑查询该存储以选择你的对象的某个子集。
 
 .. note::
 
-    A common mistake for beginners is to mistake DQL for
-    being just some form of SQL and therefore trying to use table names
-    and column names or join arbitrary tables together in a query. You
-    need to think about DQL as a query language for your object model,
-    not for your relational schema.
+    初学者的一个常见错误是将 ``DQL`` 误认为只是某种形式的
+    ``SQL``，因此尝试在查询中使用表名和列名或将任意表连接在一起。
+    你需要将DQL视为 *对象模型* 的查询语言，而不是你的 *关系模式*。
 
+DQL是 *区分* 大小写的，除了名称空间，类和字段名称都区分大小写。
 
-DQL is case in-sensitive, except for namespace, class and field
-names, which are case sensitive.
-
-Types of DQL queries
+DQL查询的类型
 --------------------
 
-DQL as a query language has SELECT, UPDATE and DELETE constructs
-that map to their corresponding SQL statement types. INSERT
-statements are not allowed in DQL, because entities and their
-relations have to be introduced into the persistence context
-through ``EntityManager#persist()`` to ensure consistency of your
-object model.
+DQL作为查询语言具有映射到对应的SQL语句类型的 ``SELECT``、``UPDATE`` 和 ``DELETE`` 构造。
+DQL中不允许使用 ``INSERT`` 语句，因为必须通过 ``EntityManager#persist()``
+将实体及其关系引入到持久性上下文，以确保你的对象模型的一致性。
 
-DQL SELECT statements are a very powerful way of retrieving parts
-of your domain model that are not accessible via associations.
-Additionally they allow you to retrieve entities and their associations
-in one single SQL select statement which can make a huge difference
-in performance compared to using several queries.
+DQL的 ``SELECT`` 语句是一种非常强大的方法，用于检索无法通过关联访问的域模型部分。
+此外，它们允许你在单个SQL ``select`` 语句中检索实体及其关联，与使用多个查询相比，这可以在性能上产生巨大差异。
 
-DQL UPDATE and DELETE statements offer a way to execute bulk
-changes on the entities of your domain model. This is often
-necessary when you cannot load all the affected entities of a bulk
-update into memory.
+DQL的 ``UPDATE`` 和 ``DELETE`` 语句提供了一种在你的域模型的实体上执行批量更改的方法。
+当你无法将需要批量更新的所有受影响实体加载到内存中时，通常需要这样做。
 
-SELECT queries
+``SELECT`` 查询
 --------------
 
-DQL SELECT clause
+``DQL SELECT`` 子句
 ~~~~~~~~~~~~~~~~~
 
-Here is an example that selects all users with an age > 20:
+以下示例使用一个 ``age > 20`` 来选择所有用户：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM MyProject\Model\User u WHERE u.age > 20');
     $users = $query->getResult();
 
-Lets examine the query:
+让我们检查一下该查询：
 
+-  ``u`` 是一个引用 ``MyProject\Model\User`` 类的所谓的 *标识变量* 或 *别名*。
+   通过将此别名放在 ``SELECT`` 子句中，我们指定希望此查询匹配的 ``User`` 类的所有实例都出现在查询结果中。
+-  ``FROM`` 关键字后面跟着一个 *完全限定* 的类名，接着跟着一个标识变量或该类名的别名。
+   此类指定我们查询的根，我们可以通过连接（稍后解释）和路径表达式进一步导航。
+-  ``WHERE`` 子句中的 ``u.age`` 表达式是一个路径表达式。
+   DQL中的路径表达式可以通过使用用于构造路径的 ``.`` 运算符来轻松识别。
+   路径表达式 ``u.age`` 引用了 ``User`` 类上的 ``age`` 字段。
 
--  ``u`` is a so called identification variable or alias that
-   refers to the ``MyProject\Model\User`` class. By placing this alias
-   in the SELECT clause we specify that we want all instances of the
-   User class that are matched by this query to appear in the query
-   result.
--  The FROM keyword is always followed by a fully-qualified class
-   name which in turn is followed by an identification variable or
-   alias for that class name. This class designates a root of our
-   query from which we can navigate further via joins (explained
-   later) and path expressions.
--  The expression ``u.age`` in the WHERE clause is a path
-   expression. Path expressions in DQL are easily identified by the
-   use of the '.' operator that is used for constructing paths. The
-   path expression ``u.age`` refers to the ``age`` field on the User
-   class.
+此查询的结果将是一个 ``User`` 对象列表，该列表包含了所有年龄大于20的用户。
 
-The result of this query would be a list of User objects where all
-users are older than 20.
-
-Result format
+结果的格式
 ~~~~~~~~~~~~~
-The composition of the expressions in the SELECT clause also
-influences the nature of the query result. There are three
-cases:
 
-**All objects**
+``SELECT`` 子句中表达式的组合也会影响查询结果的性质。有三种情况：
+
+**所有对象**
 
 .. code-block:: sql
 
     SELECT u, p, n FROM Users u...
 
-In this case, the result will be an array of User objects because of
-the FROM clause, with children ``p`` and ``n`` hydrated because of
-their inclusion in the SELECT clause.
+在这种情况下，由于 ``FROM`` 子句，结果将是一个 ``User`` 对象数组，而
+``p`` 和 ``n`` 子句由于包含在 ``SELECT`` 子句中而融合(hydrated)。
 
-**All scalars**
+**所有标量**
 
 .. code-block:: sql
 
     SELECT u.name, u.address FROM Users u...
 
-In this case, the result will be an array of arrays.  In the example
-above, each element of the result array would be an array of the
-scalar name and address values. 
+在这种情况下，结果将是一个数组的数组。在上面的示例中，结果数组的每个元素都是一个标量
+``name`` 和 ``address`` 的值的数组。
 
-You can select scalars from any entity in the query. 
+你可以在查询中选择任何实体的标量。
 
-**Mixed**
+**混合**
 
 .. code-block:: sql
 
     ``SELECT u, p.quantity FROM Users u...``
 
-Here, the result will again be an array of arrays, with each element
-being an array made up of a User object and the scalar value
-``p.quantity``.
+此时，结果将再次是一个数组的数组，每个元素都是一个由
+``User`` 对象和 ``p.quantity`` 标量值组成的数组。
 
-Multiple FROM clauses are allowed, which would cause the result
-array elements to cycle through the classes included in the
-multiple FROM clauses.
+允许多个 ``FROM`` 子句将导致结果数组元素循环遍历多个 ``FROM`` 子句中包含的类。
 
 .. note::
 
-    You cannot select other entities unless you also select the
-    root of the selection (which is the first entity in FROM).
+    除非你还选中了选择（selection，就是 ``FROM`` 中的第一个实体）的根，否则你无法选择其他实体。
 
-    For example, ``SELECT p,n FROM Users u...`` would be wrong because
-    ``u`` is not part of the SELECT
+    例如，``SELECT p,n FROM Users u...`` 会出错，因为 ``u`` 不是 ``SELECT`` 的一部分。
 
-    Doctrine throws an exception if you violate this constraint.
+    如果违反此约束，则Doctrine会抛出一个异常。
 
-
-Joins
+连接
 ~~~~~
 
-A SELECT query can contain joins. There are 2 types of JOINs:
-"Regular" Joins and "Fetch" Joins.
+``SELECT`` 查询可以包含联接。有两种类型的 ``JOIN``：“常规”连接和“获取”连接。
 
-**Regular Joins**: Used to limit the results and/or compute
-aggregate values.
+**常规联接**: 用于限制结果和/或计算聚合值。
 
-**Fetch Joins**: In addition to the uses of regular joins: Used to
-fetch related entities and include them in the hydrated result of a
-query.
+**提取联接**: 用来获取相关实体并将它们包含在一个查询的融合结果中。
 
-There is no special DQL keyword that distinguishes a regular join
-from a fetch join. A join (be it an inner or outer join) becomes a
-"fetch join" as soon as fields of the joined entity appear in the
-SELECT part of the DQL query outside of an aggregate function.
-Otherwise its a "regular join".
+没有特殊的DQL关键字可以区分常规联接和提取联接。只要已联接实体的字段出现在聚合函数之外的DQL查询的
+``SELECT`` 部分​​中，一个联接（无论是内联接还是外联接）就会成为 *提取连接*。否则就是 *常规联接*。
 
-Example:
+示例：
 
-Regular join of the address:
+``address`` 的常规联接：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT u FROM User u JOIN u.address a WHERE a.city = 'Berlin'");
     $users = $query->getResult();
 
-Fetch join of the address:
+``address`` 的提取联接：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT u, a FROM User u JOIN u.address a WHERE a.city = 'Berlin'");
     $users = $query->getResult();
 
-When Doctrine hydrates a query with fetch-join it returns the class
-in the FROM clause on the root level of the result array. In the
-previous example an array of User instances is returned and the
-address of each user is fetched and hydrated into the
-``User#address`` variable. If you access the address Doctrine does
-not need to lazy load the association with another query.
+当Doctrine使用提取联接融合一个查询时，它会返回结果数组的根级别的 ``FROM`` 子句中的类。
+在前面的示例中，返回了一个 ``User`` 实例数组，并获取每个用户的地址然后将其融合到 ``User#address`` 变量中。
+如果你访问该地址，Doctrine不需要使用另一个查询来延迟加载该关联。
 
 .. note::
 
-    Doctrine allows you to walk all the associations between
-    all the objects in your domain model. Objects that were not already
-    loaded from the database are replaced with lazy load proxy
-    instances. Non-loaded Collections are also replaced by lazy-load
-    instances that fetch all the contained objects upon first access.
-    However relying on the lazy-load mechanism leads to many small
-    queries executed against the database, which can significantly
-    affect the performance of your application. **Fetch Joins** are the
-    solution to hydrate most or all of the entities that you need in a
-    single SELECT query.
+    Doctrine允许你遍历你的域模型中所有对象之间的所有关联。
+    尚未从数据库加载的对象将替换为延迟加载的 *代理实例*。
+    未加载的集合也由延迟加载的实例替换，这些实例在 *首次* 访问时会获取所有已包含的对象。
+    但是，依赖于延迟加载机制会导致对数据库执行许多小查询，这会显著影响应用的性能。
+    **提取联接** 是在单个 ``SELECT`` 查询中为大多数或所有实体提供融合的解决方案。
 
-
-Named and Positional Parameters
+命名和位置参数
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DQL supports both named and positional parameters, however in
-contrast to many SQL dialects positional parameters are specified
-with numbers, for example "?1", "?2" and so on. Named parameters
-are specified with ":name1", ":name2" and so on.
+DQL支持 *命名* 和 *位置* 参数，但是与许多SQL方言相反，位置参数用数字指定，例如 ``?1``、``?2`` 等等。
+命名参数使用 ``:name1``、``:name2`` 等指定。
 
-When referencing the parameters in ``Query#setParameter($param, $value)``
-both named and positional parameters are used **without** their prefixes.
+当在 ``Query#setParameter($param, $value)`` 中引用参数时，使用命名和位置参数 **而无需** 它们的前缀。
 
-DQL SELECT Examples
-~~~~~~~~~~~~~~~~~~~
+DQL的 ``SELECT`` 示例
+~~~~~~~~~~~~~~~~~~~~~~~
 
-This section contains a large set of DQL queries and some
-explanations of what is happening. The actual result also depends
-on the hydration mode.
+本节包含大量DQL查询以及对正在发生的事情的一些解释。实际结果还取决于融合模式。
 
-Hydrate all User entities:
+融合所有的用户实体：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM MyProject\Model\User u');
-    $users = $query->getResult(); // array of User objects
+    $users = $query->getResult(); // User对象数组
 
-Retrieve the IDs of all CmsUsers:
+检索所有 ``CmsUser`` 的ID：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.id FROM CmsUser u');
-    $ids = $query->getResult(); // array of CmsUser ids
+    $ids = $query->getResult(); // CmsUser的id数组
 
-Retrieve the IDs of all users that have written an article:
+检索已撰写一篇文章的所有用户的ID：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT DISTINCT u.id FROM CmsArticle a JOIN a.user u');
-    $ids = $query->getResult(); // array of CmsUser ids
+    $ids = $query->getResult(); // CmsUser的id数组
 
-Retrieve all articles and sort them by the name of the articles
-users instance:
+检索所有文章并按文章的用户实例的名称对其进行排序：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT a FROM CmsArticle a JOIN a.user u ORDER BY u.name ASC');
-    $articles = $query->getResult(); // array of CmsArticle objects
+    $articles = $query->getResult(); // CmsArticle对象数组
 
-Retrieve the Username and Name of a CmsUser:
+检索一个 ``CmsUser`` 的 ``Username`` 和 ``Name``：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.username, u.name FROM CmsUser u');
-    $users = $query->getResult(); // array of CmsUser username and name values
+    $users = $query->getResult(); // ``CmsUser`` 的 ``Username`` 和 ``Name`` 值的数组：
     echo $users[0]['username'];
 
-Retrieve a ForumUser and his single associated entity:
+检索一个 ``ForumUser`` 及其单个已关联实体：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u, a FROM ForumUser u JOIN u.avatar a');
-    $users = $query->getResult(); // array of ForumUser objects with the avatar association loaded
+    $users = $query->getResult(); // ForumUser对象及已加载关联的头像的数组
     echo get_class($users[0]->getAvatar());
 
-Retrieve a CmsUser and fetch join all the phonenumbers he has:
+检索一个 ``CmsUser`` 并提取连接他所拥有的所有电话号码：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u, p FROM CmsUser u JOIN u.phonenumbers p');
-    $users = $query->getResult(); // array of CmsUser objects with the phonenumbers association loaded
+    $users = $query->getResult(); // CmsUser对象及已加载关联的电话号码的数组
     $phonenumbers = $users[0]->getPhonenumbers();
 
-Hydrate a result in Ascending:
+在 *升序* 中融合一个结果：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM ForumUser u ORDER BY u.id ASC');
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-Or in Descending Order:
+或者按 *降序* 排列：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM ForumUser u ORDER BY u.id DESC');
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-Using Aggregate Functions:
+使用聚合函数：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT COUNT(u.id) FROM Entities\User u');
     $count = $query->getSingleScalarResult();
 
     $query = $em->createQuery('SELECT u, count(g.id) FROM Entities\User u JOIN u.groups g GROUP BY u.id');
     $result = $query->getResult();
 
-With WHERE Clause and Positional Parameter:
+使用 ``WHERE`` 子句和位置参数：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM ForumUser u WHERE u.id = ?1');
     $query->setParameter(1, 321);
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-With WHERE Clause and Named Parameter:
+使用 ``WHERE`` 子句和命名参数：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM ForumUser u WHERE u.username = :name');
     $query->setParameter('name', 'Bob');
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-With Nested Conditions in WHERE Clause:
+使用 ``WHERE`` 子句中的嵌套条件：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM ForumUser u WHERE (u.username = :name OR u.username = :name2) AND u.id = :id');
     $query->setParameters(array(
         'name' => 'Bob',
         'name2' => 'Alice',
         'id' => 321,
     ));
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-With COUNT DISTINCT:
+使用 ``COUNT DISTINCT``：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT COUNT(DISTINCT u.name) FROM CmsUser');
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-With Arithmetic Expression in WHERE clause:
+使用 ``WHERE`` 子句中的算术表达式：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u WHERE ((u.id + 5000) * u.id + 3) < 10000000');
-    $users = $query->getResult(); // array of ForumUser objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-Retrieve user entities with Arithmetic Expression in ORDER clause, using the ``HIDDEN`` keyword:
+使用 ``HIDDEN`` 关键字在 ``ORDER`` 子句中使用算术表达式来检索用户实体：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u, u.posts_count + u.likes_count AS HIDDEN score FROM CmsUser u ORDER BY score');
-    $users = $query->getResult(); // array of User objects
+    $users = $query->getResult(); // ForumUser对象数组
 
-Using a LEFT JOIN to hydrate all user-ids and optionally associated
-article-ids:
+使用一个 ``LEFT JOIN`` 来融合所有用户ID和可选的关联文章ID：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.id, a.id as article_id FROM CmsUser u LEFT JOIN u.articles a');
-    $results = $query->getResult(); // array of user ids and every article_id for each user
+    $results = $query->getResult(); // 用户ID和每个用户的所有article_id的数组
 
-Restricting a JOIN clause by additional conditions specified by
-WITH:
+通过 ``WITH`` 指定的附加条件来限制一个 ``JOIN`` 子句：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT u FROM CmsUser u LEFT JOIN u.articles a WITH a.topic LIKE :foo");
     $query->setParameter('foo', '%foo%');
     $users = $query->getResult();
 
-Using several Fetch JOINs:
+使用多个提取联接：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u, a, p, c FROM CmsUser u JOIN u.articles a JOIN u.phonenumbers p JOIN a.comments c');
     $users = $query->getResult();
 
-BETWEEN in WHERE clause:
+``WHERE`` 子句中的 ``BETWEEN``：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.name FROM CmsUser u WHERE u.id BETWEEN ?1 AND ?2');
     $query->setParameter(1, 123);
     $query->setParameter(2, 321);
     $usernames = $query->getResult();
 
-DQL Functions in WHERE clause:
+``WHERE`` 子句中的DQL函数：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT u.name FROM CmsUser u WHERE TRIM(u.name) = 'someone'");
     $usernames = $query->getResult();
 
-IN() Expression:
+``IN()`` 表达式:
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.name FROM CmsUser u WHERE u.id IN(46)');
     $usernames = $query->getResult();
 
@@ -409,11 +327,10 @@ IN() Expression:
     $query = $em->createQuery('SELECT u FROM CmsUser u WHERE u.id NOT IN (1)');
     $users = $query->getResult();
 
-CONCAT() DQL Function:
+``CONCAT()`` DQL函数：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT u.id FROM CmsUser u WHERE CONCAT(u.name, 's') = ?1");
     $query->setParameter(1, 'Jess');
     $ids = $query->getResult();
@@ -422,174 +339,147 @@ CONCAT() DQL Function:
     $query->setParameter(1, 321);
     $idUsernames = $query->getResult();
 
-EXISTS in WHERE clause with correlated Subquery
+带有相关子查询的 ``WHERE`` 子句中的 ``EXISTS``：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.id FROM CmsUser u WHERE EXISTS (SELECT p.phonenumber FROM CmsPhonenumber p WHERE p.user = u.id)');
     $ids = $query->getResult();
 
-Get all users who are members of $group.
+获取所有属于 ``$group`` 成员的用户：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u.id FROM CmsUser u WHERE :groupId MEMBER OF u.groups');
     $query->setParameter('groupId', $group);
     $ids = $query->getResult();
 
-Get all users that have more than 1 phonenumber
+获取拥有超过1个电话号码的所有用户：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u WHERE SIZE(u.phonenumbers) > 1');
     $users = $query->getResult();
 
-Get all users that have no phonenumber
+获取所有没有电话号码的用户：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u WHERE u.phonenumbers IS EMPTY');
     $users = $query->getResult();
 
-Get all instances of a specific type, for use with inheritance
-hierarchies:
+获取一个特定类型的所有实例，以用于继承层级：
 
 .. versionadded:: 2.1
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM Doctrine\Tests\Models\Company\CompanyPerson u WHERE u INSTANCE OF Doctrine\Tests\Models\Company\CompanyEmployee');
     $query = $em->createQuery('SELECT u FROM Doctrine\Tests\Models\Company\CompanyPerson u WHERE u INSTANCE OF ?1');
     $query = $em->createQuery('SELECT u FROM Doctrine\Tests\Models\Company\CompanyPerson u WHERE u NOT INSTANCE OF ?1');
 
-Get all users visible on a given website that have chosen certain gender:
+获取在选定特定性别的给定网站上可见的所有用户：
 
 .. versionadded:: 2.2
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM User u WHERE u.gender IN (SELECT IDENTITY(agl.gender) FROM Site s JOIN s.activeGenderList agl WHERE s.id = ?1)');
 
 .. versionadded:: 2.4
 
-Starting with 2.4, the IDENTITY() DQL function also works for composite primary keys:
+从2.4开始，``IDENTITY()`` DQL函数也适用于复合主键：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT IDENTITY(c.location, 'latitude') AS latitude, IDENTITY(c.location, 'longitude') AS longitude FROM Checkpoint c WHERE c.user = ?1");
 
-Joins between entities without associations were not possible until version
-2.4, where you can generate an arbitrary join with the following syntax:
+在版本2.4之前，无法实现没有关联的实体之间的联接，你可以使用以下语法生成任意联接：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM User u JOIN Blacklist b WITH u.email = b.email');
 
 .. note::
-    The differences between WHERE, WITH and HAVING clauses may be
-    confusing.
+    ``WHERE``、``WITH`` 和 ``HAVING`` 子句之间的差异可能会令人困惑。
 
-    - WHERE is applied to the results of an entire query
-    - WITH is applied to a join as an additional condition. For
-      arbitrary joins (SELECT f, b FROM Foo f, Bar b WITH f.id = b.id)
-      the WITH is required, even if it is 1 = 1
-    - HAVING is applied to the results of a query after
-      aggregation (GROUP BY)
+    - ``WHERE`` 应用于整个查询的结果
+    - ``WITH`` 作为附加条件应用于一个联接。
+      对于任意联接（``SELECT f, b FROM Foo f, Bar b WITH f.id = b.id``），
+      ``WITH`` 是必需的，即使它是 ``1 = 1``
+    - ``HAVING`` 应用于聚合（``GROUP BY``）后的查询结果
 
-
-Partial Object Syntax
+部分对象语法
 ^^^^^^^^^^^^^^^^^^^^^
 
-By default when you run a DQL query in Doctrine and select only a
-subset of the fields for a given entity, you do not receive objects
-back. Instead, you receive only arrays as a flat rectangular result
-set, similar to how you would if you were just using SQL directly
-and joining some data.
+默认情况下，当在Doctrine中运行一个DQL查询，并且只选择给定实体的字段的子集时，不会接收回对象。
+相反，你只接收作为扁平矩形结果集的数组，这与你直接使用SQL并加入一些数据的情况类似。
 
-If you want to select partial objects you can use the ``partial``
-DQL keyword:
+如果要选择部分对象，可以使用 ``partial`` DQL关键字：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT partial u.{id, username} FROM CmsUser u');
-    $users = $query->getResult(); // array of partially loaded CmsUser objects
+    $users = $query->getResult(); // 部分加载的CmsUser对象数组
 
-You use the partial syntax when joining as well:
+你也可以在联接时使用 ``partial`` 语法：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT partial u.{id, username}, partial a.{id, name} FROM CmsUser u JOIN u.articles a');
-    $users = $query->getResult(); // array of partially loaded CmsUser objects
+    $users = $query->getResult(); // 部分加载的CmsUser对象数组
 
-"NEW" Operator Syntax
+``NEW`` 运算符语法
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. versionadded:: 2.4
 
-Using the ``NEW`` operator you can construct Data Transfer Objects (DTOs) directly from DQL queries.
+使用 ``NEW`` 运算符，你可以直接从DQL查询构造数据传输对象（DTO）。
 
-- When using ``SELECT NEW`` you don't need to specify a mapped entity.
-- You can specify any PHP class, it only requires that the constructor of this class matches the ``NEW`` statement.
-- This approach involves determining exactly which columns you really need,
-  and instantiating a data-transfer object that contains a constructor with those arguments.
+- 使用 ``SELECT NEW`` 时，你不需要一个指定映射的实体。
+- 你可以指定任何PHP类，它只要求此类的构造函数与该 ``NEW`` 语句匹配。
+- 这种方法涉及确切地确定你真正需要哪些列，并实例化一个包含具有这些参数的构造函数的数据传输对象。
 
-If you want to select data-transfer objects you should create a class:
+如果要选择数据传输对象，则应创建一个类：
 
 .. code-block:: php
 
-    <?php
     class CustomerDTO
     {
         public function __construct($name, $email, $city, $value = null)
         {
-            // Bind values to the object properties.
+            // 将值绑定到对象属性。
         }
     }
 
-And then use the ``NEW`` DQL keyword :
+然后使用 ``NEW`` DQL关键字：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT NEW CustomerDTO(c.name, e.email, a.city) FROM Customer c JOIN c.email e JOIN c.address a');
-    $users = $query->getResult(); // array of CustomerDTO
+    $users = $query->getResult(); // CustomerDTO数组
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT NEW CustomerDTO(c.name, e.email, a.city, SUM(o.value)) FROM Customer c JOIN c.email e JOIN c.address a JOIN c.orders o GROUP BY c');
-    $users = $query->getResult(); // array of CustomerDTO
+    $users = $query->getResult(); // CustomerDTO数组
 
-Note that you can only pass scalar expressions to the constructor.
+请注意，你只能将标量表达式传递给该构造函数。
 
-Using INDEX BY
-~~~~~~~~~~~~~~
+使用 ``INDEX BY``
+~~~~~~~~~~~~~~~~
 
-The INDEX BY construct is nothing that directly translates into SQL
-but that affects object and array hydration. After each FROM and
-JOIN clause you specify by which field this class should be indexed
-in the result. By default a result is incremented by numerical keys
-starting with 0. However with INDEX BY you can specify any other
-column to be the key of your result, it really only makes sense
-with primary or unique fields though:
+``INDEX BY`` 构造不会直接转换为SQL，但会影响对象和数组的的融合。
+在每个 ``FROM`` 和 ``JOIN`` 子句之后，你可以指定此类应在结果中编入索引的字段。
+默认情况下，结果会以从 ``0`` 开始的数字键递增。
+但是使用 ``INDEX BY``，你可以指定任何其他列作为结果的键，它实际上只对主键或唯一字段有意义：
 
 .. code-block:: sql
 
     SELECT u.id, u.status, upper(u.name) nameUpper FROM User u INDEX BY u.id
     JOIN u.phonenumbers p INDEX BY p.phonenumber
 
-Returns an array of the following kind, indexed by both user-id
-then phonenumber-id:
+返回一个以下类型的数组，由 ``user-id`` 和 ``phonenumber-id`` 索引：
 
 .. code-block:: php
 
@@ -611,133 +501,106 @@ then phonenumber-id:
               ...
           'nameUpper' => string 'JWAGE' (length=5)
 
-UPDATE queries
+``UPDATE`` 查询
 --------------
 
-DQL not only allows to select your Entities using field names, you
-can also execute bulk updates on a set of entities using an
-DQL-UPDATE query. The Syntax of an UPDATE query works as expected,
-as the following example shows:
+DQL不仅允许使用字段名称来选择实体，你还可以使用DQL的 ``UPDATE`` 查询对一组实体执行批量更新。
+如以下示例所示，一个 ``UPDATE`` 查询的语法按预期工作：
 
 .. code-block:: sql
 
     UPDATE MyProject\Model\User u SET u.password = 'new' WHERE u.id IN (1, 2, 3)
 
-References to related entities are only possible in the WHERE
-clause and using sub-selects.
+只能在 ``WHERE`` 子句中使用子选择来引用相关实体。
 
 .. warning::
 
-    DQL UPDATE statements are ported directly into a
-    Database UPDATE statement and therefore bypass any locking scheme, events
-    and do not increment the version column. Entities that are already
-    loaded into the persistence context will *NOT* be synced with the
-    updated database state. It is recommended to call
-    ``EntityManager#clear()`` and retrieve new instances of any
-    affected entity.
+    DQL ``UPDATE`` 语句直接移植到一个数据库 ``UPDATE`` 语句中，因此绕过任何锁定模式、事件，并且不增加版本列。
+    已加载到持久性上下文中的实体将 *不会* 与已更新的数据库状态同步。
+    建议调用 ``EntityManager#clear()`` 并检索任何受影响实体的新实例。
 
 
-DELETE queries
---------------
+``DELETE`` 查询
+----------------
 
-DELETE queries can also be specified using DQL and their syntax is
-as simple as the UPDATE syntax:
+也可以使用DQL指定 ``DELETE`` 查询，它们的语法与 ``UPDATE`` 语法一样简单：
 
 .. code-block:: sql
 
     DELETE MyProject\Model\User u WHERE u.id = 4
 
-The same restrictions apply for the reference of related entities.
+相关实体的引用也适用相同的限制。
 
 .. warning::
 
-    DQL DELETE statements are ported directly into a
-    Database DELETE statement and therefore bypass any events and checks for the
-    version column if they are not explicitly added to the WHERE clause
-    of the query. Additionally Deletes of specified entities are *NOT*
-    cascaded to related entities even if specified in the metadata.
+    DQL ``DELETE`` 语句直接移植到一个数据库 ``DELETE`` 语句中，因此如果它们未显式添加到查询的
+    ``WHERE`` 子句中，则会绕过任何事件和版本列的检查。
+    指定实体的额外删除是 *不会* 级联到相关实体的，即使已在元数据中指定。
 
-
-Functions, Operators, Aggregates
+函数/运算符/聚合
 --------------------------------
-It is possible to wrap both fields and identification values into
-aggregation and DQL functions. Numerical fields can be part of
-computations using mathematical operations.
 
-DQL Functions
+可以将字段和标识值封装到聚合和DQL函数中。数字字段可以是使用数学运算的计算的一部分。
+
+DQL函数
 ~~~~~~~~~~~~~
 
-The following functions are supported in SELECT, WHERE and HAVING
-clauses:
+``SELECT`、`WHERE`` 和 ``HAVING`` 子句支持以下函数：
 
+-  ``IDENTITY(single_association_path_expression [, fieldMapping])`` - 检索拥有方的关联的外键列
+-  ``ABS(arithmetic_expression)``
+-  ``CONCAT(str1, str2)``
+-  ``CURRENT_DATE()`` - 返回当前日期
+-  ``CURRENT_TIME()`` - 返回当前时间
+-  ``CURRENT_TIMESTAMP()`` - 返回当前日期和时间的时间戳
+-  ``LENGTH(str)`` - 返回给定字符串的长度
+-  ``LOCATE(needle, haystack [, offset])`` - 找到在字符串中子字符串第一次出现的位置。
+-  ``LOWER(str)`` - 返回小写的字符串。
+-  ``MOD(a, b)`` - 返回 `a` 除以 `b` 后的余数
+-  ``SIZE(collection)`` - 返回指定集合中的元素数
+-  ``SQRT(q)`` - 返回 `q` 的平方根。
+-  ``SUBSTRING(str, start [, length])`` - 返回给定字符串的子字符串。
+-  ``TRIM([LEADING | TRAILING | BOTH] ['trchar' FROM] str)`` - 按给定的 ``trim char`` 修剪字符串，默认为空格。
+-  ``UPPER(str)`` - 返回给定字符串的大写字母。
+-  ``DATE_ADD(date, days, unit)`` - 添加给定日期的天数。（支持的单位是``DAY``、``MONTH``）
+-  ``DATE_SUB(date, days, unit)`` - 减去给定日期的天数。（支持的单位是``DAY``、``MONTH``）
+-  ``DATE_DIFF(date1, date2)`` - 计算 ``date1`` 与 ``date2`` 之间的天数差异。
 
--  IDENTITY(single\_association\_path\_expression [, fieldMapping]) - Retrieve the foreign key column of association of the owning side
--  ABS(arithmetic\_expression)
--  CONCAT(str1, str2)
--  CURRENT\_DATE() - Return the current date
--  CURRENT\_TIME() - Returns the current time
--  CURRENT\_TIMESTAMP() - Returns a timestamp of the current date
-   and time.
--  LENGTH(str) - Returns the length of the given string
--  LOCATE(needle, haystack [, offset]) - Locate the first
-   occurrence of the substring in the string.
--  LOWER(str) - returns the string lowercased.
--  MOD(a, b) - Return a MOD b.
--  SIZE(collection) - Return the number of elements in the
-   specified collection
--  SQRT(q) - Return the square-root of q.
--  SUBSTRING(str, start [, length]) - Return substring of given
-   string.
--  TRIM([LEADING \| TRAILING \| BOTH] ['trchar' FROM] str) - Trim
-   the string by the given trim char, defaults to whitespaces.
--  UPPER(str) - Return the upper-case of the given string.
--  DATE_ADD(date, days, unit) - Add the number of days to a given date. (Supported units are DAY, MONTH)
--  DATE_SUB(date, days, unit) - Substract the number of days from a given date. (Supported units are DAY, MONTH)
--  DATE_DIFF(date1, date2) - Calculate the difference in days between date1-date2.
-
-Arithmetic operators
+算术运算符
 ~~~~~~~~~~~~~~~~~~~~
 
-You can do math in DQL using numeric values, for example:
+你可以使用数值在DQL中进行数学运算，例如：
 
 .. code-block:: sql
 
     SELECT person.salary * 1.5 FROM CompanyPerson person WHERE person.salary < 100000
 
-Aggregate Functions
+聚合函数
 ~~~~~~~~~~~~~~~~~~~
 
-The following aggregate functions are allowed in SELECT and GROUP
-BY clauses: AVG, COUNT, MIN, MAX, SUM
+``SELECT`` 和 ``GROUP BY`` 子句中允许使用以下聚合函数：
+``AVG``、``COUNT``、``MIN``、``MAX``、``SUM``。
 
-Other Expressions
+其他表达式
 ~~~~~~~~~~~~~~~~~
 
-DQL offers a wide-range of additional expressions that are known
-from SQL, here is a list of all the supported constructs:
+DQL对SQL中已知的各种其他表达式提供了支持，以下是所有受支持构造的列表：
 
+-  ``ALL/ANY/SOME`` - 在 ``WHERE`` 子句后面跟着一个子选择中使用，这类似于SQL中的等效构造。
+-  ``BETWEEN a AND b`` 和 ``NOT BETWEEN a AND b`` 可用于匹配算术值的范围
+-  ``IN (x1, x2, ...)`` 和 ``NOT IN (x1, x2, ..)`` 可以用来匹配一组给定的值
+-  ``LIKE ..`` 和 ``NOT LIKE ..`` 使用 ``％`` 作为一个通配符匹配字符串或文本的部分
+-  ``IS NULL`` 和 ``IS NOT NULL`` 用于检查 ``NULL`` 值
+-  ``EXISTS`` and ``NOT EXISTS`` 与一个子选择相结合
 
--  ``ALL/ANY/SOME`` - Used in a WHERE clause followed by a
-   sub-select this works like the equivalent constructs in SQL.
--  ``BETWEEN a AND b`` and ``NOT BETWEEN a AND b`` can be used to
-   match ranges of arithmetic values.
--  ``IN (x1, x2, ...)`` and ``NOT IN (x1, x2, ..)`` can be used to
-   match a set of given values.
--  ``LIKE ..`` and ``NOT LIKE ..`` match parts of a string or text
-   using % as a wildcard.
--  ``IS NULL`` and ``IS NOT NULL`` to check for null values
--  ``EXISTS`` and ``NOT EXISTS`` in combination with a sub-select
-
-Adding your own functions to the DQL language
+将自己的函数添加到DQL语言中
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default DQL comes with functions that are part of a large basis
-of underlying databases. However you will most likely choose a
-database platform at the beginning of your project and most likely
-never change it. For this cases you can easily extend the DQL
-parser with own specialized platform functions.
+默认情况下，DQL附带的函数是底层数据库的一部分。
+但是，你很可能在项目开始时就选择了一个数据库平台，而且很可能永远不会更改它。
+对于这种情况，你可以使用自己的专用的平台函数来轻松扩展DQL解析器。
 
-You can register custom DQL functions in your ORM Configuration:
+你可以在ORM配置中注册自定义DQL函数：
 
 .. code-block:: php
 
@@ -749,14 +612,11 @@ You can register custom DQL functions in your ORM Configuration:
 
     $em = EntityManager::create($dbParams, $config);
 
-The functions have to return either a string, numeric or datetime
-value depending on the registered function type. As an example we
-will add a MySQL specific FLOOR() functionality. All the given
-classes have to implement the base class :
+该函数必须返回字符串、数字或 ``datetime`` 值，具体取决于已注册的函数类型。
+作为示例，我们将添加一个特定于MySQL的 ``FLOOR()`` 函数。所有给定的类都必须实现该基类：
 
 .. code-block:: php
 
-    <?php
     namespace MyProject\Query\AST;
 
     use \Doctrine\ORM\Query\AST\Functions\FunctionNode;
@@ -784,37 +644,31 @@ classes have to implement the base class :
         }
     }
 
-We will register the function by calling and can then use it:
+我们将通过调用来注册该函数，然后使用它：
 
 .. code-block:: php
 
-    <?php
     $config = $em->getConfiguration();
     $config->registerNumericFunction('FLOOR', 'MyProject\Query\MysqlFloor');
 
     $dql = "SELECT FLOOR(person.salary * 1.75) FROM CompanyPerson person";
 
-Querying Inherited Classes
+查询已继承类
 --------------------------
 
-This section demonstrates how you can query inherited classes and
-what type of results to expect.
+本节演示如何查询已继承类以及期望的结果类型。
 
-Single Table
+单表继承
 ~~~~~~~~~~~~
 
-`Single Table Inheritance <http://martinfowler.com/eaaCatalog/singleTableInheritance.html>`_
-is an inheritance mapping strategy where all classes of a hierarchy
-are mapped to a single database table. In order to distinguish
-which row represents which type in the hierarchy a so-called
-discriminator column is used.
+`单表继承 <http://martinfowler.com/eaaCatalog/singleTableInheritance.html>`_
+是一种继承映射策略，其中一个层级的 *所有* 类都映射到 *单个* 数据库表。
+为了区分哪一行表示层级中的哪种类型，将使用所谓的 *鉴别器列*。
 
-First we need to setup an example set of entities to use. In this
-scenario it is a generic Person and Employee example:
+首先，我们需要设置一组要使用的实体。在这个案例中，它是一个通用的 ``Person`` 和 ``Employee`` 示例：
 
 .. code-block:: php
 
-    <?php
     namespace Entities;
 
     /**
@@ -852,8 +706,7 @@ scenario it is a generic Person and Employee example:
         // ...
     }
 
-First notice that the generated SQL to create the tables for these
-entities looks like the following:
+首先请注意，为这些实体创建表的生成的SQL如下所示：
 
 .. code-block:: sql
 
@@ -864,28 +717,24 @@ entities looks like the following:
         department VARCHAR(50) NOT NULL
     )
 
-Now when persist a new ``Employee`` instance it will set the
-discriminator value for us automatically:
+现在，当持久化新 ``Employee`` 实例时，它将自动为我们设置鉴别器值：
 
 .. code-block:: php
 
-    <?php
+
     $employee = new \Entities\Employee();
     $employee->setName('test');
     $employee->setDepartment('testing');
     $em->persist($employee);
     $em->flush();
 
-Now lets run a simple query to retrieve the ``Employee`` we just
-created:
+现在让我们运行一个简单的查询来检索我们刚创建的 ``Employee``：
 
 .. code-block:: sql
 
     SELECT e FROM Entities\Employee e WHERE e.name = 'test'
 
-If we check the generated SQL you will notice it has some special
-conditions added to ensure that we will only get back ``Employee``
-entities:
+如果我们检查生成的SQL，你会注意到它添加了一些特殊条件以确保我们只返回 ``Employee`` 实体：
 
 .. code-block:: sql
 
@@ -893,25 +742,18 @@ entities:
            p0_.discr AS discr3 FROM Person p0_
     WHERE (p0_.name = ?) AND p0_.discr IN ('employee')
 
-Class Table Inheritance
+类表继承
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-`Class Table Inheritance <http://martinfowler.com/eaaCatalog/classTableInheritance.html>`_
-is an inheritance mapping strategy where each class in a hierarchy
-is mapped to several tables: its own table and the tables of all
-parent classes. The table of a child class is linked to the table
-of a parent class through a foreign key constraint. Doctrine 2
-implements this strategy through the use of a discriminator column
-in the topmost table of the hierarchy because this is the easiest
-way to achieve polymorphic queries with Class Table Inheritance.
+`类表继承 <http://martinfowler.com/eaaCatalog/classTableInheritance.html>`_
+是一种继承映射策略，其中一个层级中的 *每个* 类都映射到 *多个* 表：它自己的表和所有父类的表。
+一个子类的表通过外键约束链接到父类的表。
+Doctrine2通过在层级的最顶层表中使用一个 *鉴别器列* 来实现此策略，因为这是使用类表继承来实现多态查询的最简单方法。
 
-The example for class table inheritance is the same as single
-table, you just need to change the inheritance type from
-``SINGLE_TABLE`` to ``JOINED``:
+类表继承的示例与单表继承相同，你只需将继承类型更改从 ``SINGLE_TABLE`` 为 ``JOINED``：
 
 .. code-block:: php
 
-    <?php
     /**
      * @Entity
      * @InheritanceType("JOINED")
@@ -923,8 +765,7 @@ table, you just need to change the inheritance type from
         // ...
     }
 
-Now take a look at the SQL which is generated to create the table,
-you'll notice some differences:
+现在看一下为了创建数据表而生成的SQL，你会发现一些不同之处：
 
 .. code-block:: sql
 
@@ -941,14 +782,11 @@ you'll notice some differences:
     ) ENGINE = InnoDB;
     ALTER TABLE Employee ADD FOREIGN KEY (id) REFERENCES Person(id) ON DELETE CASCADE
 
+-  数据分割在两个表之间
+-  两个表之间存在一个外键
 
--  The data is split between two tables
--  A foreign key exists between the two tables
-
-Now if were to insert the same ``Employee`` as we did in the
-``SINGLE_TABLE`` example and run the same example query it will
-generate different SQL joining the ``Person`` information
-automatically for you:
+现在，如果要插入与我们在 ``SINGLE_TABLE`` 示例中所做的相同的
+``Employee``，并运行相同的查询示例，它将生成不同的SQL：自动为你联接 ``Person`` 的信息：
 
 .. code-block:: sql
 
@@ -957,93 +795,69 @@ automatically for you:
     FROM Employee e1_ INNER JOIN Person p0_ ON e1_.id = p0_.id
     WHERE p0_.name = ?
 
-
-The Query class
+``Query`` 类
 ---------------
 
-An instance of the ``Doctrine\ORM\Query`` class represents a DQL
-query. You create a Query instance be calling
-``EntityManager#createQuery($dql)``, passing the DQL query string.
-Alternatively you can create an empty ``Query`` instance and invoke
-``Query#setDQL($dql)`` afterwards. Here are some examples:
+``Doctrine\ORM\Query`` 类的一个实例表示DQL查询。
+你通过调用 ``EntityManager#createQuery($dql)`` 并传递DQL查询字符串来创建一个 ``Query`` 实例。
+或者，你可以创建一个空 ``Query`` 实例并在之后调用 ``Query#setDQL($dql)``。这里有些例子：
 
 .. code-block:: php
 
-    <?php
-    // $em instanceof EntityManager
+    // $em 为 EntityManager 的实例
 
-    // example1: passing a DQL string
+    // 示例1: 床底一个 DQL 字符串
     $q = $em->createQuery('select u from MyProject\Model\User u');
 
-    // example2: using setDQL
+    // 示例2: 使用 setDQL
     $q = $em->createQuery();
     $q->setDQL('select u from MyProject\Model\User u');
 
-Query Result Formats
+查询结果的格式
 ~~~~~~~~~~~~~~~~~~~~
 
-The format in which the result of a DQL SELECT query is returned
-can be influenced by a so-called ``hydration mode``. A hydration
-mode specifies a particular way in which a SQL result set is
-transformed. Each hydration mode has its own dedicated method on
-the Query class. Here they are:
+一个DQL的 ``SELECT`` 查询结果返回的格式可能会受到所谓 ``hydration mode`` 的影响。
+一个融合模式指定转换SQL结果集的一种特定方式。
+每个融合模式在 ``Query`` 类上都有自己的专用方法。它们是：
 
-
--  ``Query#getResult()``: Retrieves a collection of objects. The
-   result is either a plain collection of objects (pure) or an array
-   where the objects are nested in the result rows (mixed).
--  ``Query#getSingleResult()``: Retrieves a single object. If the
-   result contains more than one object, an ``NonUniqueResultException``
-   is thrown. If the result contains no objects, an ``NoResultException``
-   is thrown. The pure/mixed distinction does not apply.
--  ``Query#getOneOrNullResult()``: Retrieve a single object. If no
-   object is found null will be returned.
--  ``Query#getArrayResult()``: Retrieves an array graph (a nested
-   array) that is largely interchangeable with the object graph
-   generated by ``Query#getResult()`` for read-only purposes.
+-  ``Query#getResult()``: 检索 *一个* **对象** 集合。
+   结果是对象的一个简单 *集合* （纯粹）或对象被嵌套在结果行中的 *数组* （混合）。
+-  ``Query#getSingleResult()``: 检索 *单个* **对象**。
+   如果结果包含多个对象，则抛出一个 ``NonUniqueResultException``。
+   如果结果不包含任何对象，则抛出一个 ``NoResultException``。纯粹/混合的区别不适用于此。
+-  ``Query#getOneOrNullResult()``: 检索 *单个* **对象**。如果没有找到对象，则返回 ``null``。
+-  ``Query#getArrayResult()``: 检索 *一个* **数组** 图表（嵌套数组），该数组图表(graph)与
+   ``Query#getResult()`` 为只读目的而生成的对象图表在很大程度上可以互换。
 
     .. note::
 
-        An array graph can differ from the corresponding object
-        graph in certain scenarios due to the difference of the identity
-        semantics between arrays and objects.
+        由于数组和对象之间的标识语义不同，在某些情况下，一个数组图图表 *可能* 与对应的对象图表不同。
 
+-  ``Query#getScalarResult()``: 检索可包含重复数据的 *标量值* 的一个扁平/矩形结果集。
+   纯粹/混合的区别不适用于此。
+-  ``Query#getSingleScalarResult()``: 从DBMS返回的结果中检索 *单个* **标量值**。
+   如果该结果包含多个标量值，则抛出一个异常。纯粹/混合的区别不适用于此。
 
+你也可以不使用这些方法，而是使用
+``Query#execute(array $params = array(), $hydrationMode = Query::HYDRATE_OBJECT)``
+通用方法。
+使用此方法，你可以使用 ``Query`` 常量中的一个作为第二个参数来直接决定融合模式。
+实际上，前面提到的方法只是 ``execute()`` 方法的快捷方式。
+例如，``Query#getResult()`` 方法在内部调用 ``execute()`` 方法，并将 ``Query::HYDRATE_OBJECT`` 作为融合模式传入。
 
--  ``Query#getScalarResult()``: Retrieves a flat/rectangular result
-   set of scalar values that can contain duplicate data. The
-   pure/mixed distinction does not apply.
--  ``Query#getSingleScalarResult()``: Retrieves a single scalar
-   value from the result returned by the dbms. If the result contains
-   more than a single scalar value, an exception is thrown. The
-   pure/mixed distinction does not apply.
+前面提到的方法的通常是优先推荐使用的，因为它能让代码更简洁。
 
-Instead of using these methods, you can alternatively use the
-general-purpose method
-``Query#execute(array $params = array(), $hydrationMode = Query::HYDRATE_OBJECT)``.
-Using this method you can directly supply the hydration mode as the
-second parameter via one of the Query constants. In fact, the
-methods mentioned earlier are just convenient shortcuts for the
-execute method. For example, the method ``Query#getResult()``
-internally invokes execute, passing in ``Query::HYDRATE_OBJECT`` as
-the hydration mode.
-
-The use of the methods mentioned earlier is generally preferred as
-it leads to more concise code.
-
-Pure and Mixed Results
+纯粹型和混合型的结果
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The nature of a result returned by a DQL SELECT query retrieved
-through ``Query#getResult()`` or ``Query#getArrayResult()`` can be
-of 2 forms: **pure** and **mixed**. In the previous simple
-examples, you already saw a "pure" query result, with only objects.
-By default, the result type is **pure** but
-**as soon as scalar values, such as aggregate values or other scalar values that do not belong to an entity, appear in the SELECT part of the DQL query, the result becomes mixed**.
-A mixed result has a different structure than a pure result in
-order to accommodate for the scalar values.
+通过 ``Query#getResult()`` 或 ``Query#getArrayResult()`` 来检索的DQL ``SELECT``
+查询，其返回的结果的性质可以有两种形式：**纯粹(pure)** 和 **混合(mixed)**。
+在前面的简单示例中，你已经看到了一个 *纯粹* 的只有对象的查询结果。
+默认情况下，结果类型是 **纯粹** 的，但
+**只要标量值（例如聚合值或不属于一个实体的其他标量值）出现在DQL查询的 ``SELECT`` 部分​​中，结果就会变成混合**。
+一个混合结果具有与纯粹结果不同的结构，以适应该标量值。
 
-A pure result usually looks like this:
+一个 *纯粹* 的结果通常如下所示：
 
 .. code-block:: php
 
@@ -1055,8 +869,7 @@ A pure result usually looks like this:
         [2] => Object
         ...
 
-A mixed result on the other hand has the following general
-structure:
+另一方面，一个 *混合* 结果普遍具有以下结构：
 
 .. code-block:: php
 
@@ -1067,34 +880,30 @@ structure:
             [0] => Object
             [1] => "some scalar string"
             ['num'] => 42
-            // ... more scalar values, either indexed numerically or with a name
+            // ... 更多标量值，无论是数字索引还是名称索引
         [1]
             [0] => Object
             [1] => "some scalar string"
             ['num'] => 42
-            // ... more scalar values, either indexed numerically or with a name
+            // ... 更多标量值，无论是数字索引还是名称索引
 
-To better understand mixed results, consider the following DQL
-query:
+为了更好地理解混合结果，请考虑以下DQL查询：
 
 .. code-block:: sql
 
     SELECT u, UPPER(u.name) nameUpper FROM MyProject\Model\User u
 
-This query makes use of the ``UPPER`` DQL function that returns a
-scalar value and because there is now a scalar value in the SELECT
-clause, we get a mixed result.
+此查询使用返回标量值的DQL函数 ``UPPER``，并且因为 ``SELECT``
+子句中现在存在一个标量值，所以我们得到一个混合结果。
 
-Conventions for mixed results are as follows:
+混合结果的约束如下：
 
+-  在 ``FROM`` 子句中获取的 *对象* 始终使用 ``0`` 键定位。
+-  每个没有名称的 *标量* 都按查询中给出的顺序从 ``1`` 开始编号。
+-  每个 *别名* 标量都以其别名作为键给出，并保留对应名称的大小写。
+-  如果从 ``FROM`` 子句中获取了多个 *对象*，则它们会每行交替。
 
--  The object fetched in the FROM clause is always positioned with the key '0'.
--  Every scalar without a name is numbered in the order given in the query, starting with 1.
--  Every aliased scalar is given with its alias-name as the key. The case of the name is kept.
--  If several objects are fetched from the FROM clause they alternate every row.
-
-
-Here is how the result could look like:
+结果如下：
 
 .. code-block:: php
 
@@ -1107,21 +916,19 @@ Here is how the result could look like:
             ['nameUpper'] => "JONATHAN"
         ...
 
-And here is how you would access it in PHP code:
+在PHP代码中访问它：
 
 .. code-block:: php
 
-    <?php
     foreach ($results as $row) {
         echo "Name: " . $row[0]->getName();
         echo "Name UPPER: " . $row['nameUpper'];
     }
 
-Fetching Multiple FROM Entities
+获取多个 ``FROM`` 实体
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you fetch multiple entities that are listed in the FROM clause then the hydration
-will return the rows iterating the different top-level entities.
+如果你获取 ``FROM`` 子句中列出的多个实体，则该融合将返回迭代不同顶级实体的行。
 
 .. code-block:: php
 
@@ -1133,118 +940,94 @@ will return the rows iterating the different top-level entities.
         [2] => Object (User)
         [3] => Object (Group)
 
-
-Hydration Modes
+融合模式
 ~~~~~~~~~~~~~~~
 
-Each of the Hydration Modes makes assumptions about how the result
-is returned to user land. You should know about all the details to
-make best use of the different result formats:
+每种融合(Hydration)模式都假设结果如何返回到用户空间。你应该了解所有细节以充分利用不同的结果格式：
 
-The constants for the different hydration modes are:
+不同的融合模式的常量是：
 
+-  ``Query::HYDRATE_OBJECT``
+-  ``Query::HYDRATE_ARRAY``
+-  ``Query::HYDRATE_SCALAR``
+-  ``Query::HYDRATE_SINGLE_SCALAR``
 
--  Query::HYDRATE\_OBJECT
--  Query::HYDRATE\_ARRAY
--  Query::HYDRATE\_SCALAR
--  Query::HYDRATE\_SINGLE\_SCALAR
-
-Object Hydration
+对象融合
 ^^^^^^^^^^^^^^^^
 
-Object hydration hydrates the result set into the object graph:
+对象融合将结果集融合成对象图表：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u');
     $users = $query->getResult(Query::HYDRATE_OBJECT);
 
-Sometimes the behavior in the object hydrator can be confusing, which is
-why we are listing as many of the assumptions here for reference:
+有时，对象融合器中的行为可能会令人困惑，这就是为什么我们列出了许多假设以供参考：
 
-- Objects fetched in a FROM clause are returned as a Set, that means every
-  object is only ever included in the resulting array once. This is the case
-  even when using JOIN or GROUP BY in ways that return the same row for an
-  object multiple times. If the hydrator sees the same object multiple times,
-  then it makes sure it is only returned once.
+- 在 ``FROM`` 子句中提取的对象作为一个集（Set）返回，这意味着每个对象只被包含在结果数组中一次。
+  即使在以多次返回对象的同一行的方式，使用````JOIN`` 或 ``GROUP BY`` 时也是如此。
+  如果融合器多次看到同一个对象，那么它确保该对象只返回一次。
 
-- If an object is already in memory from a previous query of any kind, then
-  then the previous object is used, even if the database may contain more
-  recent data. Data from the database is discarded. This even happens if the
-  previous object is still an unloaded proxy. 
+- 如果某个对象已经存在于任何类型的先前查询的内存中，则使用前一个对象，即使该数据库可能包含更新的数据。
+  来自数据库的数据被丢弃。如果前一个对象仍然是一个未加载的代理，则会发生这种情况。
 
-This list might be incomplete.
+此列表可能不完整。
 
-Array Hydration
+数组融合
 ^^^^^^^^^^^^^^^
 
-You can run the same query with array hydration and the result set
-is hydrated into an array that represents the object graph:
+你可以使用数组融合来运行相同的查询，并将结果集融合成一个表示对象图表的数组：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u');
     $users = $query->getResult(Query::HYDRATE_ARRAY);
 
-You can use the ``getArrayResult()`` shortcut as well:
+你也可以使用 ``getArrayResult()`` 快捷方式：
 
 .. code-block:: php
 
-    <?php
     $users = $query->getArrayResult();
 
-Scalar Hydration
+标量融合
 ^^^^^^^^^^^^^^^^
 
-If you want to return a flat rectangular result set instead of an
-object graph you can use scalar hydration:
+如果要返回一个扁平/矩形结果集而不是对象图表，可以使用标量融合：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u');
     $users = $query->getResult(Query::HYDRATE_SCALAR);
     echo $users[0]['u_id'];
 
-The following assumptions are made about selected fields using
-Scalar Hydration:
+使用标量融合对选定的字段进行以下假设：
 
+1. 类中的字段以结果中的DQL别名为前缀。``SELECT u.name ..`` 类型的查询会在结果行中返回一个``u_name`` 键。
 
-1. Fields from classes are prefixed by the DQL alias in the result.
-   A query of the kind 'SELECT u.name ..' returns a key 'u\_name' in
-   the result rows.
-
-Single Scalar Hydration
+单标量融合
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-If you have a query which returns just a single scalar value you can use
-single scalar hydration:
+如果你的查询只返回单个标量值，则可以使用单标量融合：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT COUNT(a.id) FROM CmsUser u LEFT JOIN u.articles a WHERE u.username = ?1 GROUP BY u.id');
     $query->setParameter(1, 'jwage');
     $numArticles = $query->getResult(Query::HYDRATE_SINGLE_SCALAR);
 
-You can use the ``getSingleScalarResult()`` shortcut as well:
+你也可以使用 ``getSingleScalarResult()`` 快捷方式：
 
 .. code-block:: php
 
-    <?php
     $numArticles = $query->getSingleScalarResult();
 
-Custom Hydration Modes
+自定义融合模式
 ^^^^^^^^^^^^^^^^^^^^^^
 
-You can easily add your own custom hydration modes by first
-creating a class which extends ``AbstractHydrator``:
+通过首先创建一个继承 ``AbstractHydrator`` 的类，你可以轻松添加你自己的自定义融合模式：
 
 .. code-block:: php
 
-    <?php
     namespace MyProject\Hydrators;
 
     use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
@@ -1257,67 +1040,52 @@ creating a class which extends ``AbstractHydrator``:
         }
     }
 
-Next you just need to add the class to the ORM configuration:
+接下来，你只需要将该类添加到ORM配置：
 
 .. code-block:: php
 
-    <?php
     $em->getConfiguration()->addCustomHydrationMode('CustomHydrator', 'MyProject\Hydrators\CustomHydrator');
 
-Now the hydrator is ready to be used in your queries:
+现在可以在你的查询中使用该融合器了：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM CmsUser u');
     $results = $query->getResult('CustomHydrator');
 
-Iterating Large Result Sets
+迭代大型结果集
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are situations when a query you want to execute returns a
-very large result-set that needs to be processed. All the
-previously described hydration modes completely load a result-set
-into memory which might not be feasible with large result sets. See
-the `Batch Processing <batch-processing.html>`_ section on details how
-to iterate large result sets.
+在某些情况下，你要执行一个会返回需要处理的非常大的结果集的查询。
+所有先前描述的融合模式会将结果集完全加载到内存中，这对于大型结果集可能是不可行的。
+有关如何迭代大型结果集的详细信息，请参阅 `批量处理 <batch-processing.html>`_ 文档。
 
-Functions
+函数
 ~~~~~~~~~
 
-The following methods exist on the ``AbstractQuery`` which both
-``Query`` and ``NativeQuery`` extend from.
+下列方法对存在 ``AbstractQuery`` 类，而 ``Query`` 和 ``NativeQuery`` 都继承与它。
 
-Parameters
+参数
 ^^^^^^^^^^
 
-Prepared Statements that use numerical or named wildcards require
-additional parameters to be executable against the database. To
-pass parameters to the query the following methods can be used:
+准备好使用数字或命名通配符的语句需要对数据库执行其他参数。要将参数传递给查询，可以使用以下方法：
 
-
--  ``AbstractQuery::setParameter($param, $value)`` - Set the
-   numerical or named wildcard to the given value.
--  ``AbstractQuery::setParameters(array $params)`` - Set an array
-   of parameter key-value pairs.
+-  ``AbstractQuery::setParameter($param, $value)`` - 将数字或命名通配符设置为给定值。
+-  ``AbstractQuery::setParameters(array $params)`` - 设置一个键值对参数的数组。
 -  ``AbstractQuery::getParameter($param)``
 -  ``AbstractQuery::getParameters()``
 
-Both named and positional parameters are passed to these methods without their ? or : prefix.
+命名和位置参数都传递给这些方法，但没有它们各自的的 ``?`` 或 ``:`` 前缀。
 
-Cache related API
+缓存相关的AP
 ^^^^^^^^^^^^^^^^^
 
-You can cache query results based either on all variables that
-define the result (SQL, Hydration Mode, Parameters and Hints) or on
-user-defined cache keys. However by default query results are not
-cached at all. You have to enable the result cache on a per query
-basis. The following example shows a complete workflow using the
-Result Cache API:
+你可以根据定义结果的所有变量（SQL、融合模式、参数以及提示）或用户定义的缓存键来缓存查询结果。
+但是，默认情况下，查询结果根本不会缓存。你必须基于每个查询启用结果缓存。
+以下示例显示了使用 ``Result Cache API`` 的完整工作流：
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery('SELECT u FROM MyProject\Model\User u WHERE u.id = ?1');
     $query->setParameter(1, 12);
 
@@ -1326,19 +1094,19 @@ Result Cache API:
     $query->useResultCache(true)
           ->setResultCacheLifeTime($seconds = 3600);
 
-    $result = $query->getResult(); // cache miss
+    $result = $query->getResult(); // 缓存未命中
 
     $query->expireResultCache(true);
-    $result = $query->getResult(); // forced expire, cache miss
+    $result = $query->getResult(); // 强制到期，缓存未命中
 
     $query->setResultCacheId('my_query_result');
-    $result = $query->getResult(); // saved in given result cache id.
+    $result = $query->getResult(); // 保存在给定的结果缓存ID中。
 
-    // or call useResultCache() with all parameters:
+    // 或使用所有参数调用 useResultCache()：
     $query->useResultCache(true, $seconds = 3600, 'my_query_result');
-    $result = $query->getResult(); // cache hit!
+    $result = $query->getResult(); // 缓存命中！
 
-    // Introspection
+    // 内省
     $queryCacheProfile = $query->getQueryCacheProfile();
     $cacheDriver = $query->getResultCacheDriver();
     $lifetime = $query->getLifetime();
@@ -1346,105 +1114,75 @@ Result Cache API:
 
 .. note::
 
-    You can set the Result Cache Driver globally on the
-    ``Doctrine\ORM\Configuration`` instance so that it is passed to
-    every ``Query`` and ``NativeQuery`` instance.
+    你可以在 ``Doctrine\ORM\Configuration``
+    实例上全局的设置结果缓存驱动器，以便将它传递给每一个 ``Query`` 和 ``NativeQuery`` 实例。
 
-
-Query Hints
+查询提示
 ^^^^^^^^^^^
 
-You can pass hints to the query parser and hydrators by using the
-``AbstractQuery::setHint($name, $value)`` method. Currently there
-exist mostly internal query hints that are not be consumed in
-userland. However the following few hints are to be used in
-userland:
+你可以使用 ``AbstractQuery::setHint($name, $value)``
+方法将提示传递给查询解析器和融合器。
+目前大多数的内部查询提示都不会在用户空间(userland)中使用。
+但是，以下几个提示可以在用户空间中使用：
 
+-  ``Query::HINT_FORCE_PARTIAL_LOAD`` - 允许融合对象，尽管并非所有列都被提取。
+   此查询提示可用于处理包含 ``char`` 或 ``binary`` 数据的大型结果集的内存消耗问题。
+   Doctrine无法隐式重新加载这些数据。
+   如果要从数据库中完全重新加载，则必须传递部分的已加载对象到 ``EntityManager::refresh()``。
+-  ``Query::HINT_REFRESH`` - 此查询在 ``EntityManager::refresh()``
+   内部使用，也可以在用户空间中使用。
+   如果指定此提示并且一个查询返回已由 ``UnitOfWork`` 管理的实体的数据，则将刷新现有实体的字段。
+   在正常操作中，会丢弃一个加载已存在实体的数据的结果集，以有利于已存在的实体。
+-  ``Query::HINT_CUSTOM_TREE_WALKERS`` - 一个附加到DQL查询解析进程的额外
+   ``Doctrine\ORM\Query\TreeWalker`` 实例的数组。
 
--  Query::HINT\_FORCE\_PARTIAL\_LOAD - Allows to hydrate objects
-   although not all their columns are fetched. This query hint can be
-   used to handle memory consumption problems with large result-sets
-   that contain char or binary data. Doctrine has no way of implicitly
-   reloading this data. Partially loaded objects have to be passed to
-   ``EntityManager::refresh()`` if they are to be reloaded fully from
-   the database.
--  Query::HINT\_REFRESH - This query is used internally by
-   ``EntityManager::refresh()`` and can be used in userland as well.
-   If you specify this hint and a query returns the data for an entity
-   that is already managed by the UnitOfWork, the fields of the
-   existing entity will be refreshed. In normal operation a result-set
-   that loads data of an already existing entity is discarded in favor
-   of the already existing entity.
--  Query::HINT\_CUSTOM\_TREE\_WALKERS - An array of additional
-   ``Doctrine\ORM\Query\TreeWalker`` instances that are attached to
-   the DQL query parsing process.
-
-Query Cache (DQL Query Only)
+查询缓存（仅限DQL查询）
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Parsing a DQL query and converting it into a SQL query against the
-underlying database platform obviously has some overhead in
-contrast to directly executing Native SQL queries. That is why
-there is a dedicated Query Cache for caching the DQL parser
-results. In combination with the use of wildcards you can reduce
-the number of parsed queries in production to zero.
+与直接执行原生SQL查询相比，解析一个DQL查询并将其转换为针对底层数据库平台的SQL查询，显然会产生一些开销。
+这就是为什么有一个专用的查询缓存来缓存DQL解析器的结果。
+结合使用通配符，你可以将 *生产* 中将已解析的查询数量减少到 *零*。
 
-The Query Cache Driver is passed from the
-``Doctrine\ORM\Configuration`` instance to each
-``Doctrine\ORM\Query`` instance by default and is also enabled by
-default. This also means you don't regularly need to fiddle with
-the parameters of the Query Cache, however if you do there are
-several methods to interact with it:
+默认情况下，查询缓存驱动从 ``Doctrine\ORM\Configuration`` 实例传递到每个
+``Doctrine\ORM\Query`` 实例，并且默认情况下也启用。
+这也意味着你不需要经常使用查询缓存的参数，但是如果你要这样做，有几种方法可以与它进行交互：
 
-
--  ``Query::setQueryCacheDriver($driver)`` - Allows to set a Cache
-   instance
--  ``Query::setQueryCacheLifeTime($seconds = 3600)`` - Set lifetime
-   of the query caching.
--  ``Query::expireQueryCache($bool)`` - Enforce the expiring of the
-   query cache if set to true.
+-  ``Query::setQueryCacheDriver($driver)`` - 允许设置一个 ``Cache`` 实例
+-  ``Query::setQueryCacheLifeTime($seconds = 3600)`` - 设置查询缓存的生命周期。
+-  ``Query::expireQueryCache($bool)`` - 如果设置为 ``true``，则强制使查询缓存过期。
 -  ``Query::getExpireQueryCache()``
 -  ``Query::getQueryCacheDriver()``
 -  ``Query::getQueryCacheLifeTime()``
 
-First and Max Result Items (DQL Query Only)
+首个和最大的结果单元（仅限DQL查询）
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can limit the number of results returned from a DQL query as
-well as specify the starting offset, Doctrine then uses a strategy
-of manipulating the select query to return only the requested
-number of results:
-
+你可以限制从一个DQL查询返回的结果数以及指定起始偏移量，然后Doctrine使用一个操作
+``select`` 查询的策略来仅返回请求的结果数：
 
 -  ``Query::setMaxResults($maxResults)``
 -  ``Query::setFirstResult($offset)``
 
 .. note::
 
-    If your query contains a fetch-joined collection
-    specifying the result limit methods are not working as you would
-    expect. Set Max Results restricts the number of database result
-    rows, however in the case of fetch-joined collections one root
-    entity might appear in many rows, effectively hydrating less than
-    the specified number of results.
+    如果你的查询包含一个提取联接集合，指定的结果限制方法将无法正常工作。
+    设置 ``Max Results`` 来限制数据库结果行的数量，但是对于已提取联接集合，一个根实体可能出现在许多行中，能有效地融合少于指定数量的结果。
 
 .. _dql-temporarily-change-fetch-mode:
 
-Temporarily change fetch mode in DQL
+暂时更改DQL中的提取模式
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-While normally all your associations are marked as lazy or extra lazy you will have cases where you are using DQL and don't want to
-fetch join a second, third or fourth level of entities into your result, because of the increased cost of the SQL JOIN. You
-can mark a many-to-one or one-to-one association as fetched temporarily to batch fetch these entities using a WHERE .. IN query.
+虽然通常你的所有关联都标记为延迟或者超级(extra)延迟，但是你会遇到使用DQL并且不希望提取联接第二、第三或第四级的实体到结果中的情况，因为SQL ``JOIN`` 的成本增加了。
+你可以标记一个临时提取的多对一或一对一关联，以使用 ``WHERE .. IN`` 查询批量提取这些实体。
 
 .. code-block:: php
 
-    <?php
     $query = $em->createQuery("SELECT u FROM MyProject\User u");
     $query->setFetchMode("MyProject\User", "address", \Doctrine\ORM\Mapping\ClassMetadata::FETCH_EAGER);
     $query->execute();
 
-Given that there are 10 users and corresponding addresses in the database the executed queries will look something like:
+鉴于数据库中有 ``10`` 个用户和相应的地址，执行的查询将类似于：
 
 .. code-block:: sql
 
@@ -1452,58 +1190,51 @@ Given that there are 10 users and corresponding addresses in the database the ex
     SELECT * FROM address WHERE id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
 .. note::
-    Changing the fetch mode during a query mostly makes sense for one-to-one and many-to-one relations. In that case, 
-    all the necessary IDs are available after the root entity (``user`` in the above example) has been loaded. So, one
-    query per association can be executed to fetch all the referred-to entities (``address``).
-    
-    For one-to-many relations, changing the fetch mode to eager will cause to execute one query **for every root entity
-    loaded**. This gives no improvement over the ``lazy`` fetch mode which will also initialize the associations on
-    a one-by-one basis once they are accessed.
 
+    在查询期间更改提取模式通常对于一对一和多对一关系是有意义的。
+    在这种情况下，在加载根实体（在上面的示例中的 ``user``）之后，所有必需的ID都可用。
+    因此，可以执行每个关联的一个查询以获取所有已引用的实体（``address``）。
+
+    对于一对多关系，将提取模式更改为 ``eager`` 将导致 **为每个已加载的根实体** 执行一个查询。
+    这对于 ``lazy`` 提取模式没有任何改进，一旦访问它们也将逐个初始化关联。
 
 EBNF
 ----
 
-The following context-free grammar, written in an EBNF variant,
-describes the Doctrine Query Language. You can consult this grammar
-whenever you are unsure about what is possible with DQL or what the
-correct syntax for a particular query should be.
+以一个 ``EBNF`` 变体编写的以下无上下文语法(grammar)描述了Doctrine查询语言。
+每当你不确定DQL的可能性或特定查询的正确语法应该是什么时，你可以查阅此语法。
 
-Document syntax:
+文档语法
 ~~~~~~~~~~~~~~~~
 
+-  非终端以一个大写字符开头
+-  终端以一个小写字符开头
+-  括号 ``(...)`` 用于分组
+-  方括号 ``[...]`` 用于定义可选部分，例如零次或一次
+-  大括号 ``{...}`` 用于重复，例如零次或多次
+-  双引号 ``“...”`` 用于定义一个终端字符串
+-  竖条 ``|`` 代表另一种选择
 
--  non-terminals begin with an upper case character
--  terminals begin with a lower case character
--  parentheses (...) are used for grouping
--  square brackets [...] are used for defining an optional part,
-   e.g. zero or one time
--  curly brackets {...} are used for repetition, e.g. zero or more
-   times
--  double quotation marks "..." define a terminal string
--  a vertical bar \| represents an alternative
-
-Terminals
+终端
 ~~~~~~~~~
 
+-  identifier (``name``, ``email``, ...) 必须匹配 ``[a-z_][a-z0-9_]*``
+-  fully_qualified_name (``Doctrine\Tests\Models\CMS\CmsUser``) 匹配PHP的完全限定类名
+-  aliased_name (``CMS:CmsUser``) 使用两个标识符，一个用于命名空间别名，另一个用于其中的类
+-  string (``foo``, ``bars house``, ``%ninja%``, ...)
+-  char (``/``, ``\\``, `` ``, ...)
+-  integer (``-1``, ``0``, ``1``, ``34``, ...)
+-  float (``-0.23``, ``0.007``, ``1.245342E+8``, ...)
+-  boolean (``false``, ``true``)
 
--  identifier (name, email, ...) must match ``[a-z_][a-z0-9_]*``
--  fully_qualified_name (Doctrine\Tests\Models\CMS\CmsUser) matches PHP's fully qualified class names
--  aliased_name (CMS:CmsUser) uses two identifiers, one for the namespace alias and one for the class inside it
--  string ('foo', 'bar''s house', '%ninja%', ...)
--  char ('/', '\\', ' ', ...)
--  integer (-1, 0, 1, 34, ...)
--  float (-0.23, 0.007, 1.245342E+8, ...)
--  boolean (false, true)
-
-Query Language
+查询语言
 ~~~~~~~~~~~~~~
 
 .. code-block:: php
 
     QueryLanguage ::= SelectStatement | UpdateStatement | DeleteStatement
 
-Statements
+语句
 ~~~~~~~~~~
 
 .. code-block:: php
@@ -1512,7 +1243,7 @@ Statements
     UpdateStatement ::= UpdateClause [WhereClause]
     DeleteStatement ::= DeleteClause [WhereClause]
 
-Identifiers
+标识符
 ~~~~~~~~~~~
 
 .. code-block:: php
@@ -1549,7 +1280,7 @@ Identifiers
     /* The difference between this and FieldIdentificationVariable is only semantical, because it points to a single field (not mapping to a relation) */
     SimpleStateField ::= FieldIdentificationVariable
 
-Path Expressions
+路径表达式
 ~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1575,7 +1306,7 @@ Path Expressions
     /* "name" */
     StateField                                ::= {EmbeddedClassStateField "."}* SimpleStateField
 
-Clauses
+子句
 ~~~~~~~
 
 .. code-block:: php
@@ -1592,7 +1323,7 @@ Clauses
     OrderByClause       ::= "ORDER" "BY" OrderByItem {"," OrderByItem}*
     Subselect           ::= SimpleSelectClause SubselectFromClause [WhereClause] [GroupByClause] [HavingClause] [OrderByClause]
 
-Items
+单元
 ~~~~~
 
 .. code-block:: php
@@ -1602,8 +1333,8 @@ Items
     GroupByItem ::= IdentificationVariable | ResultVariable | SingleValuedPathExpression
     NewValue    ::= SimpleArithmeticExpression | "NULL"
 
-From, Join and Index by
-~~~~~~~~~~~~~~~~~~~~~~~
+``From``、``Join`` 以及 ``Index by``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
 
@@ -1614,7 +1345,7 @@ From, Join and Index by
     Join                                       ::= ["LEFT" ["OUTER"] | "INNER"] "JOIN" (JoinAssociationDeclaration | RangeVariableDeclaration) ["WITH" ConditionalExpression]
     IndexBy                                    ::= "INDEX" "BY" StateFieldPathExpression
 
-Select Expressions
+Select表达式
 ~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1626,7 +1357,7 @@ Select Expressions
     NewObjectExpression     ::= "NEW" AbstractSchemaName "(" NewObjectArg {"," NewObjectArg}* ")"
     NewObjectArg            ::= ScalarExpression | "(" Subselect ")"
 
-Conditional Expressions
+条件表达式
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1640,8 +1371,7 @@ Conditional Expressions
                                     EmptyCollectionComparisonExpression | CollectionMemberExpression |
                                     InstanceOfExpression
 
-
-Collection Expressions
+集合表达式
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1649,7 +1379,7 @@ Collection Expressions
     EmptyCollectionComparisonExpression ::= CollectionValuedPathExpression "IS" ["NOT"] "EMPTY"
     CollectionMemberExpression          ::= EntityExpression ["NOT"] "MEMBER" ["OF"] CollectionValuedPathExpression
 
-Literal Values
+文字值
 ~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1657,7 +1387,7 @@ Literal Values
     Literal     ::= string | char | integer | float | boolean
     InParameter ::= Literal | InputParameter
 
-Input Parameter
+输入参数
 ~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1666,7 +1396,7 @@ Input Parameter
     PositionalParameter ::= "?" integer
     NamedParameter      ::= ":" string
 
-Arithmetic Expressions
+算术表达式
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1680,7 +1410,7 @@ Arithmetic Expressions
                                    | FunctionsReturningDatetime | IdentificationVariable | ResultVariable
                                    | InputParameter | CaseExpression
 
-Scalar and Type Expressions
+标量和类型表达式
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1697,16 +1427,16 @@ Scalar and Type Expressions
 
 .. note::
 
-    Parts of CASE expressions are not yet implemented.
+    部分 ``CASE`` 表达式尚未实现。
 
-Aggregate Expressions
+聚合表达式
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: php
 
     AggregateExpression ::= ("AVG" | "MAX" | "MIN" | "SUM" | "COUNT") "(" ["DISTINCT"] SimpleArithmeticExpression ")"
 
-Case Expressions
+Case表达式
 ~~~~~~~~~~~~~~~~
 
 .. code-block:: php
@@ -1720,10 +1450,10 @@ Case Expressions
     CoalesceExpression    ::= "COALESCE" "(" ScalarExpression {"," ScalarExpression}* ")"
     NullifExpression      ::= "NULLIF" "(" ScalarExpression "," ScalarExpression ")"
 
-Other Expressions
+其他表达式
 ~~~~~~~~~~~~~~~~~
 
-QUANTIFIED/BETWEEN/COMPARISON/LIKE/NULL/EXISTS
+``QUANTIFIED``/``BETWEEN``/``COMPARISON``/``LIKE``/``NULL``/``EXISTS``
 
 .. code-block:: php
 
@@ -1738,7 +1468,7 @@ QUANTIFIED/BETWEEN/COMPARISON/LIKE/NULL/EXISTS
     ExistsExpression         ::= ["NOT"] "EXISTS" "(" Subselect ")"
     ComparisonOperator       ::= "=" | "<" | "<=" | "<>" | ">" | ">=" | "!="
 
-Functions
+函数
 ~~~~~~~~~
 
 .. code-block:: php
@@ -1770,5 +1500,3 @@ Functions
             "LOWER" "(" StringPrimary ")" |
             "UPPER" "(" StringPrimary ")" |
             "IDENTITY" "(" SingleValuedAssociationPathExpression {"," string} ")"
-
-
