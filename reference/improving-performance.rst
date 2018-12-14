@@ -1,68 +1,53 @@
-Improving Performance
+提升性能
 =====================
 
-Bytecode Cache
+字节码缓存
 --------------
 
-It is highly recommended to make use of a bytecode cache like APC.
-A bytecode cache removes the need for parsing PHP code on every
-request and can greatly improve performance.
+强烈建议使用像APC这样的字节码缓存。字节码缓存消除了在每个请求上解析PHP代码的需要，并且可以极大地提高性能。
 
-    "If you care about performance and don't use a bytecode
-    cache then you don't really care about performance. Please get one
-    and start using it."
-    
+    “如果你关心性能并且不使用字节码缓存，那么你并不是真正关心性能。请获取一个并开始使用它。”
+
     *Stas Malyshev, Core Contributor to PHP and Zend Employee*
 
-
-Metadata and Query caches
+元数据和查询缓存
 -------------------------
 
-As already mentioned earlier in the chapter about configuring
-Doctrine, it is strongly discouraged to use Doctrine without a
-Metadata and Query cache (preferably with APC or Memcache as the
-cache driver). Operating Doctrine without these caches means
-Doctrine will need to load your mapping information on every single
-request and has to parse each DQL query on every single request.
-This is a waste of resources.
+正如前面在配置Doctrine的章节中已经提到的，强烈建议不要使用没有元数据和查询缓存的Doctrine（最好使用
+``APC`` 或 ``Memcache`` 作为缓存驱动）。
+没有这些缓存的Doctrine操作意味着Doctrine需要在每个请求上加载映射信息，并且必须在每个请求上解析每个DQL查询。这是浪费资源。
 
-Alternative Query Result Formats
+备用的查询结果格式
 --------------------------------
 
-Make effective use of the available alternative query result
-formats like nested array graphs or pure scalar results, especially
-in scenarios where data is loaded for read-only purposes.
+有效利用可用的替代查询结果格式，如嵌套数组图表或纯标量结果，尤其是在为只读目的而加载数据的情况下。
 
-Read-Only Entities
+只读实体
 ------------------
 
-Starting with Doctrine 2.1 you can mark entities as read only (See metadata mapping
-references for details). This means that the entity marked as read only is never considered
-for updates, which means when you call flush on the EntityManager these entities are skipped
-even if properties changed. Read-Only allows to persist new entities of a kind and remove existing
-ones, they are just not considered for updates.
+从Doctrine2.1开始，你可以将实体标记为只读（有关详细信息，请参阅 *元数据映射引用*）。
+这意味着标记为只读的实体永远不会考虑更新，这意味着当你在
+``EntityManager`` 上调用 ``flush`` 时，即使有属性发生更改，也会跳过这些实体。
+只读是一种允许持久新的实体并删除现有的实体的方式，它们只是不考虑更新。
 
-Extra-Lazy Collections
+超级延迟集合
 ----------------------
 
-If entities hold references to large collections you will get performance and memory problems initializing them.
-To solve this issue you can use the EXTRA_LAZY fetch-mode feature for collections. See the :doc:`tutorial <../tutorials/extra-lazy-associations>`
-for more information on how this fetch mode works.
+如果实体持有对大型集合的引用，则会在初始化时遇到性能和内存问题。
+要解决此问题，你可以对集合使用 ``EXTRA_LAZY`` 提取模式功能。有关此提取模式如何工作的更多信息，请参阅
+:doc:`教程 <../tutorials/extra-lazy-associations>`。
 
-Temporarily change fetch mode in DQL
+临时更改DQL中的提取模式
 ------------------------------------
 
-See :ref:`Doctrine Query Language chapter <dql-temporarily-change-fetch-mode>`
+请参阅：:ref:`Doctrine查询语言 <dql-temporarily-change-fetch-mode>`
 
-
-Apply Best Practices
+应用最佳实践
 --------------------
 
-A lot of the points mentioned in the Best Practices chapter will
-also positively affect the performance of Doctrine.
+最佳实践章节中提到的许多要点也会对Doctrine的表现产生积极影响。
 
-
-Change Tracking policies
+变更跟踪政策
 ------------------------
 
-See: :doc:`Change Tracking Policies <reference/change-tracking-policies>`
+请参阅：:doc:`变更跟踪政策 <reference/change-tracking-policies>`。
