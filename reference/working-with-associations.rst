@@ -1,97 +1,85 @@
-Working with Associations
+关联的使用
 =========================
 
-Associations between entities are represented just like in regular
-object-oriented PHP code using references to other objects or
-collections of objects.
+实体之间的关联就像常规的面向对象的PHP代码使用对其他对象或对象集合的引用一样。
 
-Changes to associations in your code are not synchronized to the
-database directly, only when calling ``EntityManager#flush()``.
+只有在调用 ``EntityManager#flush()`` 时，代码中关联的更改才会直接与数据库同步。
 
-There are other concepts you should know about when working
-with associations in Doctrine:
+在Doctrine中使用关联时，你应该了解其他一些概念：
 
--  If an entity is removed from a collection, the association is
-   removed, not the entity itself. A collection of entities always
-   only represents the association to the containing entities, not the
-   entity itself.
--  When a bidirectional assocation is updated, Doctrine only checks
-   on one of both sides for these changes. This is called the :doc:`owning side <unitofwork-associations>`
-   of the association.
--  A property with a reference to many entities has to be instances of the
-   ``Doctrine\Common\Collections\Collection`` interface.
+-  如果从一个集合中删除实体，是删除该关联，而不是实体本身。
+   一个实体的集合始终仅表示与包含实体的关联，而不是实体本身。
+-  更新双向关联时，Doctrine仅检查关联双方中的一方以查找这些更改。
+   这被称为关联的 :doc:`拥有方 <unitofwork-associations>`。
+-  一个引用许多实体的属性必须是 ``Doctrine\Common\Collections\Collection`` 接口的实例。
 
-Association Example Entities
+关联实体示例
 ----------------------------
 
-We will use a simple comment system with Users and Comments as
-entities to show examples of association management. See the PHP
-docblocks of each association in the following example for
-information about its type and if it's the owning or inverse side.
+我们将使用带有 ``Users`` 和 ``Comments`` 的简单评论系统作为实体来展示关联管理的示例。
+请参阅以下示例中每个关联的PHP文档区块，以获取有关其类型的信息，以及它是拥有方还是从属方。
 
 .. code-block:: php
 
-    <?php
     /** @Entity */
     class User
     {
         /** @Id @GeneratedValue @Column(type="string") */
         private $id;
-    
+
         /**
-         * Bidirectional - Many users have Many favorite comments (OWNING SIDE)
+         * 双向 - 多个用户都有多个喜欢的评论（拥有方）
          *
          * @ManyToMany(targetEntity="Comment", inversedBy="userFavorites")
          * @JoinTable(name="user_favorite_comments")
          */
         private $favorites;
-    
+
         /**
-         * Unidirectional - Many users have marked many comments as read
+         * 单向 - 多个用户已将多个评论标记为已阅读
          *
          * @ManyToMany(targetEntity="Comment")
          * @JoinTable(name="user_read_comments")
          */
         private $commentsRead;
-    
+
         /**
-         * Bidirectional - One-To-Many (INVERSE SIDE)
+         * 双向 - 一对多 (从属方)
          *
          * @OneToMany(targetEntity="Comment", mappedBy="author")
          */
         private $commentsAuthored;
-    
+
         /**
-         * Unidirectional - Many-To-One
+         * 单向 - 多对一
          *
          * @ManyToOne(targetEntity="Comment")
          */
         private $firstComment;
     }
-    
+
     /** @Entity */
     class Comment
     {
         /** @Id @GeneratedValue @Column(type="string") */
         private $id;
-    
+
         /**
-         * Bidirectional - Many comments are favorited by many users (INVERSE SIDE)
+         * 双向 - 多个评论都被多个用户所青睐（从属方）
          *
          * @ManyToMany(targetEntity="User", mappedBy="favorites")
          */
         private $userFavorites;
-    
+
         /**
-         * Bidirectional - Many Comments are authored by one user (OWNING SIDE)
+         * 双向 - 多个评论由一个用户撰写（拥有方）
          *
          * @ManyToOne(targetEntity="User", inversedBy="commentsAuthored")
          */
          private $author;
     }
 
-This two entities generate the following MySQL Schema (Foreign Key
-definitions omitted):
+这两个实体生成以下MySQL模式（省略了外键定义）：
 
 .. code-block:: sql
 
@@ -100,203 +88,169 @@ definitions omitted):
         firstComment_id VARCHAR(255) DEFAULT NULL,
         PRIMARY KEY(id)
     ) ENGINE = InnoDB;
-    
+
     CREATE TABLE Comment (
         id VARCHAR(255) NOT NULL,
         author_id VARCHAR(255) DEFAULT NULL,
         PRIMARY KEY(id)
     ) ENGINE = InnoDB;
-    
+
     CREATE TABLE user_favorite_comments (
         user_id VARCHAR(255) NOT NULL,
         favorite_comment_id VARCHAR(255) NOT NULL,
         PRIMARY KEY(user_id, favorite_comment_id)
     ) ENGINE = InnoDB;
-    
+
     CREATE TABLE user_read_comments (
         user_id VARCHAR(255) NOT NULL,
         comment_id VARCHAR(255) NOT NULL,
         PRIMARY KEY(user_id, comment_id)
     ) ENGINE = InnoDB;
 
-Establishing Associations
+建立关联
 -------------------------
 
-Establishing an association between two entities is
-straight-forward. Here are some examples for the unidirectional
-relations of the ``User``:
+建立两个实体之间的一个关联是直截了当的。以下是一些 ``User`` 的单向关系的例子：
 
 .. code-block:: php
 
-    <?php
     class User
     {
         // ...
         public function getReadComments() {
              return $this->commentsRead;
         }
-    
+
         public function setFirstComment(Comment $c) {
             $this->firstComment = $c;
         }
     }
 
-The interaction code would then look like in the following snippet
-(``$em`` here is an instance of the EntityManager):
+然后，交互代码将在以下代码段中展示（此处的 ``$em`` 是 ``EntityManager`` 的实例）：
 
 .. code-block:: php
 
-    <?php
     $user = $em->find('User', $userId);
-    
-    // unidirectional many to many
+
+    // 单向多对多
     $comment = $em->find('Comment', $readCommentId);
     $user->getReadComments()->add($comment);
-    
+
     $em->flush();
-    
-    // unidirectional many to one
+
+    // 单向多对一
     $myFirstComment = new Comment();
     $user->setFirstComment($myFirstComment);
-    
+
     $em->persist($myFirstComment);
     $em->flush();
 
-In the case of bi-directional associations you have to update the
-fields on both sides:
+在双向关联的情况下，你必须更新关联双方的字段：
 
 .. code-block:: php
 
-    <?php
     class User
     {
         // ..
-    
+
         public function getAuthoredComments() {
             return $this->commentsAuthored;
         }
-    
+
         public function getFavoriteComments() {
             return $this->favorites;
         }
     }
-    
+
     class Comment
     {
         // ...
-    
+
         public function getUserFavorites() {
             return $this->userFavorites;
         }
-    
+
         public function setAuthor(User $author = null) {
             $this->author = $author;
         }
     }
-    
-    // Many-to-Many
+
+    // 多对多
     $user->getFavorites()->add($favoriteComment);
     $favoriteComment->getUserFavorites()->add($user);
-    
+
     $em->flush();
-    
-    // Many-To-One / One-To-Many Bidirectional
+
+    // 双向的多对一/一对多
     $newComment = new Comment();
     $user->getAuthoredComments()->add($newComment);
     $newComment->setAuthor($user);
-    
+
     $em->persist($newComment);
     $em->flush();
 
-Notice how always both sides of the bidirectional association are
-updated. The previous unidirectional associations were simpler to
-handle.
+请注意双向关联的双方是如何更新的。之前的单向关联更易于处理。
 
-Removing Associations
+删除关联
 ---------------------
 
-Removing an association between two entities is similarly
-straight-forward. There are two strategies to do so, by key and by
-element. Here are some examples:
+删除两个实体之间的一个关联同样是直截了当的。有两种策略可以实现：根据键和根据元素。这里有些例子：
 
 .. code-block:: php
 
-    <?php
-    // Remove by Elements
+    // 按元素删除
     $user->getComments()->removeElement($comment);
     $comment->setAuthor(null);
-    
+
     $user->getFavorites()->removeElement($comment);
     $comment->getUserFavorites()->removeElement($user);
-    
-    // Remove by Key
+
+    // 按键删除
     $user->getComments()->remove($ithComment);
     $comment->setAuthor(null);
 
-You need to call ``$em->flush()`` to make persist these changes in
-the database permanently.
+你还需要调用 ``$em->flush()`` 以永久持久化数据库中的这些更改。
 
-Notice how both sides of the bidirectional association are always
-updated. Unidirectional associations are consequently simpler to
-handle.
+请注意双向关联的双方是如何始终更新的。因此，单向关联更易于处理。
 
-Also note that if you use type-hinting in your methods, you will 
-have to specify a nullable type, i.e. ``setAddress(?Address $address)``,
-otherwise ``setAddress(null)`` will fail to remove the association.
-Another way to deal with this is to provide a special method, like
-``removeAddress()``. This can also provide better encapsulation as
-it hides the internal meaning of not having an address.
+另请注意，如果在方法中使用类型提示，则必须指定一个 ``nullable`` 类型，即
+``setAddress(?Address $address)``，否则 ``setAddress(null)`` 将无法删除关联。
+解决这个问题的另一种方法是提供一个特殊的方法，比如 ``removeAddress()``。
+这也可以提供了更好的封装，因为它隐藏了未具有一个 ``address`` 的内部含义。
 
-When working with collections, keep in mind that a Collection is
-essentially an ordered map (just like a PHP array). That is why the
-``remove`` operation accepts an index/key. ``removeElement`` is a
-separate method that has O(n) complexity using ``array_search``,
-where n is the size of the map.
+使用集合时，请记住一个集合本质上是一个有序映射（就像PHP数组一样）。
+这就是 ``remove`` 操作接受索引/键的原因。``removeElement`` 是一个使用 ``array_search``
+的具有 ``O(n)`` 复杂度的单独方法，其中 ``n`` 是映射的大小。
 
 .. note::
 
-    Since Doctrine always only looks at the owning side of a
-    bidirectional association for updates, it is not necessary for
-    write operations that an inverse collection of a bidirectional
-    one-to-many or many-to-many association is updated. This knowledge
-    can often be used to improve performance by avoiding the loading of
-    the inverse collection.
+    由于Doctrine始终 *只* 查看双向关联更新的 *拥有方* ，因此写操作不必更新双向一对多或多对多关联的 *从属方* 集合。
+    这种知识通常可以通过避免加载从属方集合来提高性能。
 
+你还可以使用 ``Collections::clear()`` 方法来清除整个集合的内容。
+你应该知道，使用此方法会在刷新操作时导致一个直接且优化的数据库删除或更新调用，而且无法识别已重新添加到集合中的实体。
 
-You can also clear the contents of a whole collection using the
-``Collections::clear()`` method. You should be aware that using
-this method can lead to a straight and optimized database delete or
-update call during the flush operation that is not aware of
-entities that have been re-added to the collection.
+假设你通过调用 ``$post->getTags()->clear();`` 清除了标签集合，然后调用
+``$post->getTags()->add($tag)``。这将无法识别先前已添加的标签，因此将发出两个单独的数据库调用。
 
-Say you clear a collection of tags by calling
-``$post->getTags()->clear();`` and then call
-``$post->getTags()->add($tag)``. This will not recognize the tag having 
-already been added previously and will consequently issue two separate database 
-calls.
-
-Association Management Methods
+关联管理的方法
 ------------------------------
 
-It is generally a good idea to encapsulate proper association
-management inside the entity classes. This makes it easier to use
-the class correctly and can encapsulate details about how the
-association is maintained.
+在实体类中封装适当的关联管理通常是个好主意。
+这样可以更容易地正确使用类，并可以封装有关如何维护关联的详细信息。
 
-The following code shows updates to the previous User and Comment
-example that encapsulate much of the association management code:
+以下代码显示了之前的 ``User`` 和 ``Comment`` 示例的更新，这些示例封装了大部分关联管理代码：
 
 .. code-block:: php
 
-    <?php
     class User
     {
         //...
         public function markCommentRead(Comment $comment) {
-            // Collections implement ArrayAccess
+            // 集合实现了 ArrayAccess
             $this->commentsRead[] = $comment;
         }
-    
+
         public function addComment(Comment $comment) {
             if (count($this->commentsAuthored) == 0) {
                 $this->setFirstComment($comment);
@@ -304,136 +258,109 @@ example that encapsulate much of the association management code:
             $this->comments[] = $comment;
             $comment->setAuthor($this);
         }
-    
+
         private function setFirstComment(Comment $c) {
             $this->firstComment = $c;
         }
-    
+
         public function addFavorite(Comment $comment) {
             $this->favorites->add($comment);
             $comment->addUserFavorite($this);
         }
-    
+
         public function removeFavorite(Comment $comment) {
             $this->favorites->removeElement($comment);
             $comment->removeUserFavorite($this);
         }
     }
-    
+
     class Comment
     {
         // ..
-    
+
         public function addUserFavorite(User $user) {
             $this->userFavorites[] = $user;
         }
-    
+
         public function removeUserFavorite(User $user) {
             $this->userFavorites->removeElement($user);
         }
     }
 
-You will notice that ``addUserFavorite`` and ``removeUserFavorite``
-do not call ``addFavorite`` and ``removeFavorite``, thus the
-bidirectional association is strictly-speaking still incomplete.
-However if you would naively add the ``addFavorite`` in
-``addUserFavorite``, you end up with an infinite loop, so more work
-is needed. As you can see, proper bidirectional association
-management in plain OOP is a non-trivial task and encapsulating all
-the details inside the classes can be challenging.
+你发现，``addUserFavorite`` 和 ``removeUserFavorite`` 没有调用
+``addFavorite`` 和 ``removeFavorite``，因此严格讲双向关联还没有完成。
+但是，如果你天真地在 ``addUserFavorite`` 中添加 ``addFavorite``，你最终会得到一个无限循环，因此需要做更多的工作。
+正如你所看到的，在普通（plain）OOP中进行适当的双向关联管理是一项非常重要的任务，并且将类中的所有细节封装起来可能有一定的挑战性。
 
 .. note::
 
-    If you want to make sure that your collections are perfectly
-    encapsulated you should not return them from a
-    ``getCollectionName()`` method directly, but call
-    ``$collection->toArray()``. This way a client programmer for the
-    entity cannot circumvent the logic you implement on your entity for
-    association management. For example:
-
+    如果你想确保你的集合被完美封装，你不应该直接从一个 ``getCollectionName()``
+    方法中返回它们，而是调用 ``$collection->toArray()``。
+    这样，实体的客户端程序就无法规避你在实体上实现的逻辑，从而进行关联管理。例如：
 
 .. code-block:: php
 
-    <?php
     class User {
         public function getReadComments() {
             return $this->commentsRead->toArray();
         }
     }
 
-This will however always initialize the collection, with all the
-performance penalties given the size. In some scenarios of large
-collections it might even be a good idea to completely hide the
-read access behind methods on the EntityRepository.
+但是，这将始终初始化集合，并根据该大小给出所有性能损失。
+This will however always initialize the collection, with all the performance penalties given the size.
+在大型集合的某些场景中，将读取访问完全隐藏在 ``EntityRepository`` 的方法后面甚至可能是个好主意。
 
-There is no single, best way for association management. It greatly
-depends on the requirements of your concrete domain model as well
-as your preferences.
+关联管理没有单一、最好的方法。它在很大程度上取决于你的具体域模型的要求以及你的偏好。
 
-Synchronizing Bidirectional Collections
+同步双向集合
 ---------------------------------------
 
-In the case of Many-To-Many associations you as the developer have the 
-responsibility of keeping the collections on the owning and inverse side
-in sync when you apply changes to them. Doctrine can only
-guarantee a consistent state for the hydration, not for your client
-code.
+在多对多关联的情况下，作为开发人员，你有责任在对拥有方和从属方应用更改时同时同步它们的集合。
+Doctrine只能保证融合的一致状态，而不是你的客户端代码。
 
-Using the User-Comment entities from above, a very simple example
-can show the possible caveats you can encounter:
+使用上面的 ``User-Comment`` 实体，一个非常简单的例子可以展示你可能遇到的麻烦：
 
 .. code-block:: php
 
-    <?php
     $user->getFavorites()->add($favoriteComment);
-    // not calling $favoriteComment->getUserFavorites()->add($user);
-    
+    // 未调用 $favoriteComment->getUserFavorites()->add($user);
+
     $user->getFavorites()->contains($favoriteComment); // TRUE
     $favoriteComment->getUserFavorites()->contains($user); // FALSE
 
-There are two approaches to handle this problem in your code:
+在你的代码中有两种方法可以解决此问题：
 
-
-1. Ignore updating the inverse side of bidirectional collections,
-   BUT never read from them in requests that changed their state. In
-   the next request Doctrine hydrates the consistent collection state
-   again.
-2. Always keep the bidirectional collections in sync through
-   association management methods. Reads of the Collections directly
-   after changes are consistent then.
+1. 忽略双向集合的从属方的更新，*但是* 从不在改变其状态的请求中读取它们。
+   在下一个请求中，Doctrine将再次融合一致的集合状态。
+2. 始终通过管理关联的方法使双向集合保持同步。在确保变更一致之后直接读取这些集合。
 
 .. _transitive-persistence:
 
-Transitive persistence / Cascade Operations
+传递持久性：级联操作
 -------------------------------------------
 
-Doctrine 2 provides a mechanism for transitive persistence through cascading of certain operations.
-Each association to another entity or a collection of
-entities can be configured to automatically cascade the following operations to the associated entities:
-``persist``, ``remove``, ``merge``, ``detach``, ``refresh`` or ``all``.
+Doctrine2通过级联某些操作提供了一个传递(transitive)持久性的机制。
+每个关联到其他实体或实体的集合的关联都可以被配置为自动化将以下操作级联到相关实体：
+``persist``、``remove``、``merge``、``detach``、``refresh`` 以及 ``all``。
 
-The main use case for ``cascade: persist`` is to avoid "exposing" associated entities to your PHP application.
-Continuing with the User-Comment example of this chapter, this is how the creation of a new user and a new
-comment might look like in your controller (without ``cascade: persist``):
+ ``cascade: persist`` 的主要用例是避免将相关实体“暴露”到PHP应用中。
+ 继续本章的 ``User-Comment`` 示例，这是在控制器中创建新用户和新评论的方式（未设置 ``cascade: persist``）：
 
 .. code-block:: php
 
-    <?php
     $user = new User();
     $myFirstComment = new Comment();
     $user->addComment($myFirstComment);
-    
+
     $em->persist($user);
-    $em->persist($myFirstComment); // required, if `cascade: persist` is not set
+    $em->persist($myFirstComment); // 必需的, 如果为设置 `cascade: persist` 的话
     $em->flush();
 
-Note that the Comment entity is instantiated right here in the controller.
-To avoid this, ``cascade: persist`` allows you to "hide" the Comment entity from the controller,
-only accessing it through the User entity:
+请注意，``Comment`` 实体是在控制器中进行了实例化。
+为避免这种情况，``cascade: persist`` 允许你从控制器“隐藏” ``Comment`` 实体，而仅通过 ``User`` 实体访问它：
 
 .. code-block:: php
 
-    <?php
     // User entity
     class User
     {
@@ -456,16 +383,15 @@ only accessing it through the User entity:
         // ...
     }
 
-If you then set up the cascading to the ``User#commentsAuthored`` property...
+如果你接着设置该级联到 ``User#commentsAuthored`` 属性...
 
 .. code-block:: php
 
-    <?php
     class User
     {
         //...
         /**
-         * Bidirectional - One-To-Many (INVERSE SIDE)
+         * 双向 - 一对多（从属方）
          *
          * @OneToMany(targetEntity="Comment", mappedBy="author", cascade={"persist", "remove"})
          */
@@ -473,28 +399,26 @@ If you then set up the cascading to the ``User#commentsAuthored`` property...
         //...
     }
 
-...you can now create a user and an associated comment like this:
+...你现在可以如下所示创建一个用户和相关的评论：
 
 .. code-block:: php
 
-    <?php
     $user = new User();
     $user->comment('Lorem ipsum', new DateTime());
-    
+
     $em->persist($user);
     $em->flush();
 
 .. note::
 
-    The idea of ``cascade: persist`` is not to save you any lines of code in the controller.
-    If you instantiate the comment object in the controller (i.e. don't set up the user entity as shown above),
-    even with ``cascade: persist`` you still have to call ``$myFirstComment->setUser($user);``.
+    ``cascade: persist`` 这个主意不是为了节省控制器中的任何代码行。
+    如果你在控制器中实例化评论对象（即未如上所示设置用户实体），即使配置了
+    ``cascade: persist``，你仍然需要调用 ``$myFirstComment->setUser($user);``。
 
-Thanks to ``cascade: remove``, you can easily delete a user and all linked comments without having to loop through them:
+多亏了 ``cascade: remove``，你可以轻松删除一个用户以及所有链接的评论，而无需循环遍历它们：
 
 .. code-block:: php
 
-    <?php
     $user = $em->find('User', $deleteUserId);
 
     $em->remove($user);
@@ -502,67 +426,48 @@ Thanks to ``cascade: remove``, you can easily delete a user and all linked comme
 
 .. note::
 
-    Cascade operations are performed in memory. That means collections and related entities
-    are fetched into memory (even if they are marked as lazy) when
-    the cascade operation is about to be performed. This approach allows
-    entity lifecycle events to be performed for each of these operations.
+    级联操作在内存中执行。这意味着当即将执行级联操作时，集合和相关实体会被提取到内存中（即使它们被标记为延迟）。
+    此方法允许为每个操作执行实体生命周期事件。
 
-    However, pulling object graphs into memory on cascade can cause considerable performance
-    overhead, especially when the cascaded collections are large. Make sure
-    to weigh the benefits and downsides of each cascade operation that you define.
+    但是，在级联中将对象图表拉入内存会导致相当大的性能开销，尤其是当已级联集合很大时。
+    确保权衡你定义的每个级联操作的优点和缺点。
 
-    To rely on the database level cascade operations for the delete operation instead, you can
-    configure each join column with :doc:`the onDelete option <working-with-objects>`.
+    相比依赖数据库级别的级联操作来完成删除操作，你可以使用
+    :doc:` onDelete选项 <working-with-objects>` 来配置每个联接列。
 
-Even though automatic cascading is convenient, it should be used
-with care. Do not blindly apply ``cascade=all`` to all associations as
-it will unnecessarily degrade the performance of your application.
-For each cascade operation that gets activated, Doctrine also
-applies that operation to the association, be it single or
-collection valued.
+即使自动级联很方便，也应小心使用。不要盲目地应用 ``cascade=all``
+到所有关联，因为它会不必要地降低你的应用的性能。
+对于每个被激活的级联操作，Doctrine还会将该操作应用于关联，无论是单个值还是集合值。
 
-Persistence by Reachability: Cascade Persist
+可达性持久：级联持久
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are additional semantics that apply to the Cascade Persist
-operation. During each ``flush()`` operation Doctrine detects if there
-are new entities in any collection and three possible cases can
-happen:
+还有其他语义适用于 *级联持久* 操作。在每次的 ``flush()``
+操作期间，Doctrine会检测任何集合中是否有新实体，并且可能发生三种情况：
 
+1. 一个集合中标记为 ``cascade: persist`` 的新实体将由Doctrine直接持久化。
+2. 一个集合中标未记为 ``cascade: persist`` 的新实体将生成一个异常并回滚 ``flush()`` 操作。
+3. 忽略没有新实体的集合。
 
-1. New entities in a collection marked as ``cascade: persist`` will be
-   directly persisted by Doctrine.
-2. New entities in a collection not marked as ``cascade: persist`` will
-   produce an Exception and rollback the ``flush()`` operation.
-3. Collections without new entities are skipped.
+此概念称为 **可达性持久**：只要将关联定义为 ``cascade: persist``，在已管理实体上发现的新实体就会自动持久化保存。
 
-This concept is called Persistence by Reachability: New entities
-that are found on already managed entities are automatically
-persisted as long as the association is defined as ``cascade: persist``.
-
-Orphan Removal
+孤立移除
 --------------
 
-There is another concept of cascading that is relevant only when removing entities
-from collections. If an Entity of type ``A`` contains references to privately
-owned Entities ``B`` then if the reference from ``A`` to ``B`` is removed the
-entity ``B`` should also be removed, because it is not used anymore.
+还有另一种仅在从集合中移除实体时才有意义的级联概念。
+如果一个 ``A`` 类型的实体包含对私有(privately owned)的实体 ``B`` 的引用，那么如果 ``A`` 对 ``B``
+的引用被移除了，则还应移除实体 ``B``，因为它不再被使用。
 
-OrphanRemoval works with one-to-one, one-to-many and many-to-many associations.
+``OrphanRemoval`` 对 *一对一*、*一对多* 以及 *多对多* 关系起作用。
 
 .. note::
 
-    When using the ``orphanRemoval=true`` option Doctrine makes the assumption
-    that the entities are privately owned and will **NOT** be reused by other entities.
-    If you neglect this assumption your entities will get deleted by Doctrine even if
-    you assigned the orphaned entity to another one.
+    当使用 ``orphanRemoval=true`` 选项时，Doctrine会假设实体是 *私有* 的，并且 *不会* 被其他实体复用。
+    如果你忽略了这个假设，即使你将该孤立实体分配给另一个实体，你的实体也会被Doctrine删除。
 
-As a better example consider an Addressbook application where you have Contacts, Addresses
-and StandingData:
+作为一个更好的例子，思考包含 ``Contacts``、``Addresses`` 和 ``StandingData`` 的一个 ``Addressbook`` 应用：
 
 .. code-block:: php
-
-    <?php
 
     namespace Addressbook;
 
@@ -598,11 +503,9 @@ and StandingData:
         }
     }
 
-Now two examples of what happens when you remove the references:
+现在有两个说明删除引用时会发生什么的示例：
 
 .. code-block:: php
-
-    <?php
 
     $contact = $em->find("Addressbook\Contact", $contactId);
     $contact->newStandingData(new StandingData("Firstname", "Lastname", "Street"));
@@ -610,21 +513,16 @@ Now two examples of what happens when you remove the references:
 
     $em->flush();
 
-In this case you have not only changed the ``Contact`` entity itself but 
-you have also removed the references for standing data and as well as one 
-address reference. When flush is called not only are the references removed 
-but both the old standing data and the one address entity are also deleted 
-from the database.
+在这个例子中，你不仅更改了 ``Contact`` 实体本身，而且还删除了 *standing data* 的引用以及一个 *address* 引用。
+调用 ``flush()`` 时，不仅删除了该引用，而且还从数据库中删除旧的 *standing data* 和一个 *address* 实体。
 
 .. _filtering-collections:
 
-Filtering Collections
+过滤集合
 ---------------------
 
-Collections have a filtering API that allows to slice parts of data from
-a collection. If the collection has not been loaded from the database yet,
-the filtering API can work on the SQL level to make optimized access to
-large collections.
+集合具有一个 **过滤API**，允许从集合中分割部分数据。
+如果尚未从数据库加载集合，则该过滤API可以在SQL级别上工作，以对大型集合进行优化访问。
 
 .. code-block:: php
 
@@ -646,16 +544,13 @@ large collections.
 
 .. tip::
 
-    You can move the access of slices of collections into dedicated methods of
-    an entity. For example ``Group#getTodaysBirthdayUsers()``.
+    你可以将集合切片的访问移动到实体的专用方法中。例如 ``Group#getTodaysBirthdayUsers()``。
 
-The Criteria has a limited matching language that works both on the
-SQL and on the PHP collection level. This means you can use collection matching
-interchangeably, independent of in-memory or sql-backed collections.
+``Criteria`` 具有一个可以在SQL和PHP集合级别上工作的限制匹配语言。
+这意味着你可以交替使用集合匹配，独立于内存(in-memory)或sql支持(sql-backed)的集合。
+This means you can use collection matching interchangeably, independent of in-memory or sql-backed collections.
 
 .. code-block:: php
-
-    <?php
 
     use Doctrine\Common\Collections;
 
@@ -701,8 +596,7 @@ interchangeably, independent of in-memory or sql-backed collections.
         public function getMaxResults();
     }
 
-You can build expressions through the ExpressionBuilder. It has the following
-methods:
+你可以通过 ``ExpressionBuilder`` 构建表达式。它有以下方法：
 
 * ``andX($arg1, $arg2, ...)``
 * ``orX($arg1, $arg2, ...)``
@@ -719,9 +613,6 @@ methods:
 * ``startsWith($field, $value)``
 * ``endsWith($field, $value)``
 
-
 .. note::
 
-    There is a limitation on the compatibility of Criteria comparisons.
-    You have to use scalar values only as the value in a comparison or
-    the behaviour between different backends is not the same.
+    ``Criteria`` 比较的兼容性存在限制。一个比较的值必须是标量值，或者不同后端之间的行为并不相同。
