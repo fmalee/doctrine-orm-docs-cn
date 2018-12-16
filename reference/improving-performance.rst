@@ -50,4 +50,4 @@
 变更跟踪政策
 ------------------------
 
-请参阅：:doc:`变更跟踪政策 <reference/change-tracking-policies>`。
+请参阅：:doc:`变更跟踪政策 <change-tracking-policies>`。

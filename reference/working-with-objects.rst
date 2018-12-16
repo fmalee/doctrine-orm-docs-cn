@@ -560,7 +560,7 @@ in the Association Mapping chapter.
     $availableNickname = 0 === $em->getRepository('MyProject\Domain\User')->count(['nickname' => 'nonexistent']);
 
 通过Criteria
-~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. versionadded:: 2.3
 
