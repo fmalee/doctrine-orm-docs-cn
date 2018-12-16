@@ -23,7 +23,6 @@
 
 .. toctree::
    :maxdepth: 1
-   :numbered:
 
    reference/architecture
    reference/configuration.rst
