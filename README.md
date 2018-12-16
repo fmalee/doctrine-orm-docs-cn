@@ -18,7 +18,38 @@ Github：https://github.com/doctrine/doctrine2/tree/master/docs
 - `Repository`：仓库
 - `Entity`：实体
 - `Entity Manger`：实体管理器
-- `Query Builder `：查询生成器
+- `Query Builder`：查询生成器
+- `Terminology`：术语
+- `EntityGenerator`：实体生成器
+- `Unit of Work`：工作单元
+- `Write Lock`：写锁
+- `Docblock`：文档区块
+- `Sequence Generator`：序列生成器
+- `Quote`：引用
+- `Change Tracking Policy`：变更跟踪策略
+- `Owning Side`：拥有方
+- `Inverse Side`：从属方
+- `Hydration`：融合
+- `Hydrated`：融合
+- `Hydrator`：融合器
+- `Partial Object`：部分对象
+- `Fully-Qualified`：完全限定
+- `FQCN`：完全限定类名
+- `Join`：联接
+- `Aggregate`：聚合
+- `Aggregate Function`：聚合函数
+- `Collection`：集合
+- `Fetch Join`：提取链接
+- `Discriminator`：鉴别器
+- `Class Table Inheritance`：类表继承
+- `Single Table Inheritance`：单表继承
+- `Persistence by Reachability`：可达性持久
+- `Orphan Removal`：孤立移除
+- `Slice`：切片
+- ``：
+- ``：
+- ``：
+- ``：
 
 ## 生成主题
 

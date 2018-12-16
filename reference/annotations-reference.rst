@@ -1,36 +1,24 @@
-Annotations Reference
+注释参考
 =====================
 
-You've probably used docblock annotations in some form already,
-most likely to provide documentation metadata for a tool like
-``PHPDocumentor`` (@author, @link, ...). Docblock annotations are a
-tool to embed metadata inside the documentation section which can
-then be processed by some tool. Doctrine 2 generalizes the concept
-of docblock annotations so that they can be used for any kind of
-metadata and so that it is easy to define new docblock annotations.
-In order to allow more involved annotation values and to reduce the
-chances of clashes with other docblock annotations, the Doctrine 2
-docblock annotations feature an alternative syntax that is heavily
-inspired by the Annotation syntax introduced in Java 5.
+你可能已经以某种形式使用了文档块注释，最有可能为
+``PHPDocumentor`` （``@author``、``@link``...）等工具提供文档元数据。
+文档区块注释是一种在文档部分中嵌入元数据的工具，然后可以通过某些工具进行处理。
+Doctrine2归纳了文档区块注释的概念，以便它们可以用于任何类型的元数据，因此很容易定义新的文档区块注释。
+为了允许涉及更多的注释值并减少与其他文档区块注释发生冲突的可能性，Doctrine2文档区块注释使用另一种语法，该语法受Java5中引入的注释语法的启发。
 
-The implementation of these enhanced docblock annotations is
-located in the ``Doctrine\Common\Annotations`` namespace and
-therefore part of the Common package. Doctrine 2 docblock
-annotations support namespaces and nested annotations among other
-things. The Doctrine 2 ORM defines its own set of docblock
-annotations for supplying object-relational mapping metadata.
+这些增强的文档区块注释的实现位于 ``Doctrine\Common\Annotations`` 命名空间中，因此是Common软件的一部分。
+Doctrine2文档区块注释支持命名空间和嵌套注释等功能。
+Doctrine2 ORM定义了自己的一组文档区块注释，用于提供对象-关系映射的元数据。
 
 .. note::
 
-    If you're not comfortable with the concept of docblock
-    annotations, don't worry, as mentioned earlier Doctrine 2 provides
-    XML and YAML alternatives and you could easily implement your own
-    favourite mechanism for defining ORM metadata.
+    如果你对文档区块注释的概念不满意，请不要担心。
+    如前所述，Doctrine2提供了XML和YAML替代方案，你可以轻松实现自己喜欢的机制来定义ORM元数据。
 
-In this chapter a reference of every Doctrine 2 Annotation is given
-with short explanations on their context and usage.
+在本章中，每个Doctrine2注释的参考文献都给出了对其上下文和用法的简短解释。
 
-Index
+索引
 -----
 
 -  :ref:`@Column <annref_column>`
@@ -73,7 +61,7 @@ Index
 -  :ref:`@UniqueConstraint <annref_uniqueconstraint>`
 -  :ref:`@Version <annref_version>`
 
-Reference
+参考
 ---------
 
 .. _annref_column:
@@ -81,85 +69,58 @@ Reference
 @Column
 ~~~~~~~
 
-Marks an annotated instance variable as "persistent". It has to be
-inside the instance variables PHP DocBlock comment. Any value hold
-inside this variable will be saved to and loaded from the database
-as part of the lifecycle of the instance variables entity-class.
+将已注释实例的变量标记为“持久”。它必须在实例变量的PHP文档区块注释中。
+此变量中的任何值都将作为实例变量的“实体类”的生命周期的一部分保存到数据库中并从数据库中加载。
 
-Required attributes:
+必需属性：
 
--  **type**: Name of the Doctrine Type which is converted between PHP
-   and Database representation.
+-  **type**: 在PHP和数据库表示之间转换的Doctrine映射类型的名称。
 
-Optional attributes:
+可选属性：
 
--  **name**: By default the property name is used for the database
-   column name also, however the 'name' attribute allows you to
-   determine the column name.
+-  **name**: 默认情况下，属性名称也用于数据库列名称，但 ``name`` 属性允许你修改列名称。
 
--  **length**: Used by the "string" type to determine its maximum
-   length in the database. Doctrine does not validate the length of a
-   string values for you.
+-  **length**: 由 ``string`` 类型使用，用于确定其在数据库中的最大长度。
+   Doctrine不会为你验证该字符串值的长度。
 
--  **precision**: The precision for a decimal (exact numeric) column
-   (applies only for decimal column), which is the maximum number of
-   digits that are stored for the values.
+-  **precision**: 一个十进制（精确数字）列的精度（仅适用于十进制列），这是该值存储的最大位数。
 
--  **scale**: The scale for a decimal (exact numeric) column (applies
-   only for decimal column), which represents the number of digits
-   to the right of the decimal point and must not be greater than
-   *precision*.
+-  **scale**: 一个十进制（精确数字）列的小数点(scale)（仅适用于十进制列），表示小数点右边的位数，且不得大于 *precision*。
 
--  **unique**: Boolean value to determine if the value of the column
-   should be unique across all rows of the underlying entities table.
+-  **unique**: 布尔值，用于确定列的值在底层实体表的所有行中是否唯一。
 
--  **nullable**: Determines if NULL values allowed for this column. If not specified, default value is false.
+-  **nullable**: 确定此列是否允许 ``NULL`` 值。如果未指定，则默认值为 ``false``。
 
--  **options**: Array of additional options:
+-  **options**: 其他选项数组：
 
-   -  ``default``: The default value to set for the column if no value
-      is supplied.
+   -  ``default``: 如果未提供任何值，则为列设置的默认值。
 
-   -  ``unsigned``: Boolean value to determine if the column should
-      be capable of representing only non-negative integers
-      (applies only for integer column and might not be supported by
-      all vendors).
+   -  ``unsigned``: 布尔值，用于确定列是否应仅能够表示非负整数（仅适用于整数列，并且可能不受所有供应商支持）。
 
-   -  ``fixed``: Boolean value to determine if the specified length of
-      a string column should be fixed or varying (applies only for
-      string/binary column and might not be supported by all vendors).
+   -  ``fixed``: 布尔值，用于确定字符串列的指定长度是固定还是变化
+      （仅适用于字符串/二进制列，并且可能不受所有供应商支持）。
 
-   -  ``comment``: The comment of the column in the schema (might not
-      be supported by all vendors).
+   -  ``comment``: 模式中列的注释（可能并非所有供应商都支持）。
 
-   -  ``collation``: The collation of the column (only supported by Drizzle, Mysql, PostgreSQL>=9.1, Sqlite and SQLServer).
+   -  ``collation``: 列的排序规则（仅受Drizzle，Mysql，PostgreSQL> = 9.1，Sqlite和SQLServer支持）。
 
-   -  ``check``: Adds a check constraint type to the column (might not
-      be supported by all vendors).
+   -  ``check``: 向列添加一个检查约束类型（可能并非所有供应商都支持）。
 
--  **columnDefinition**: DDL SQL snippet that starts after the column
-   name and specifies the complete (non-portable!) column definition.
-   This attribute allows to make use of advanced RMDBS features.
-   However you should make careful use of this feature and the
-   consequences. SchemaTool will not detect changes on the column correctly
-   anymore if you use "columnDefinition".
+-  **columnDefinition**: 在列名后面开始并指定完整（非可移植！）的列定义的DDL SQL片段。
+   此属性允许使用高级RMDBS功能。但是，你应该小心使用此功能及其后果。
+   如果使用 ``columnDefinition``，``SchemaTool`` 将无法再正确检测列的更改。
 
-   Additionally you should remember that the "type"
-   attribute still handles the conversion between PHP and Database
-   values. If you use this attribute on a column that is used for
-   joins between tables you should also take a look at
-   :ref:`@JoinColumn <annref_joincolumn>`.
+   此外，你应该记住 ``type`` 属性仍然处理PHP和数据库值之间的转换。
+   如果在用于表之间连接的列上使用此属性，则还应该查看 :ref:`@JoinColumn <annref_joincolumn>`。
 
 .. note::
 
-    For more detailed information on each attribute, please refer to
-    the DBAL ``Schema-Representation`` documentation.
+    有关每个属性的更多详细信息，请参阅DBAL的 ``Schema-Representation`` 文档。
 
-Examples:
+示例：
 
 .. code-block:: php
 
-    <?php
     /**
      * @Column(type="string", length=32, unique=true, nullable=false)
      */
@@ -189,42 +150,38 @@ Examples:
 
 @ColumnResult
 ~~~~~~~~~~~~~~
-References name of a column in the SELECT clause of a SQL query.
-Scalar result types can be included in the query result by specifying this annotation in the metadata.
 
-Required attributes:
+引用SQL查询的 ``SELECT`` 子句中的一个列的名称。
+通过在元数据中指定此注释，可以在查询结果中包含 ``Scalar`` 结果类型。
 
--  **name**: The name of a column in the SELECT clause of a SQL query
+必需属性：
+
+-  **name**: SQL查询的 ``SELECT`` 子句中一个列的名称
 
 .. _annref_cache:
 
 @Cache
 ~~~~~~~~~~~~~~
-Add caching strategy to a root entity or a collection.
 
-Optional attributes:
+将缓存策略添加到一个根实体或集合。
 
--  **usage**: One of ``READ_ONLY``, ``READ_WRITE`` or ``NONSTRICT_READ_WRITE``, By default this is ``READ_ONLY``.
--  **region**: An specific region name
+可选属性：
+
+-  **usage**: ``READ_ONLY``、``READ_WRITE`` 或 ``NONSTRICT_READ_WRITE`` 其中之一，默认值为 ``READ_ONLY``。
+-  **region**: 特定的区域(region)名称
 
 .. _annref_changetrackingpolicy:
 
 @ChangeTrackingPolicy
 ~~~~~~~~~~~~~~~~~~~~~
 
-The Change Tracking Policy annotation allows to specify how the
-Doctrine 2 UnitOfWork should detect changes in properties of
-entities during flush. By default each entity is checked according
-to a deferred implicit strategy, which means upon flush UnitOfWork
-compares all the properties of an entity to a previously stored
-snapshot. This works out of the box, however you might want to
-tweak the flush performance where using another change tracking
-policy is an interesting option.
+变更跟踪策略注释允许指定Doctrine2的 ``UnitOfWork`` 在刷新期间应如何检测实体的属性的变更。
+默认情况下，根据延迟隐式策略将检查每个实体，这意味着在刷新时，``UnitOfWork`` 会将一个实体的所有属性与先前存储的快照进行比较。
+这开箱即用，但你可能想要调整刷新的性能，使用其他变更跟踪策略是一个有趣的选择。
 
-The :doc:`details on all the available change tracking policies <change-tracking-policies>`
-can be found in the configuration section.
+有关所有可用变更跟踪策略的详细信息，请参阅 :doc:`配置部分 <change-tracking-policies>`。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -242,19 +199,21 @@ Example:
 @CustomIdGenerator
 ~~~~~~~~~~~~~~~~~~~~~
 
-This annotations allows you to specify a user-provided class to generate identifiers. This annotation only works when both :ref:`@Id <annref_id>` and :ref:`@GeneratedValue(strategy="CUSTOM") <annref_generatedvalue>` are specified.
+此注释允许你指定一个自定义的类以生成标识符。
+只有在指定 :ref:`@Id <annref_id>` 和 :ref:`@GeneratedValue(strategy="CUSTOM") <annref_generatedvalue>`
+时，此注释才有效。
 
-Required attributes:
+必需属性：
 
--  **class**: name of the class which should extend Doctrine\ORM\Id\AbstractIdGenerator
+-  **class**: 继承 ``Doctrine\ORM\Id\AbstractIdGenerator`` 类的类名称
 
-Example:
+示例：
 
 .. code-block:: php
 
     <?php
     /**
-     * @Id 
+     * @Id
      * @Column(type="integer")
      * @GeneratedValue(strategy="CUSTOM")
      * @CustomIdGenerator(class="My\Namespace\MyIdGenerator")
@@ -266,31 +225,37 @@ Example:
 @DiscriminatorColumn
 ~~~~~~~~~~~~~~~~~~~~~
 
+此注释是继承层次结构的最高/超类的可选注释。它指定保存类实际名称的类的详细信息。
 This annotation is an optional annotation for the topmost/super
 class of an inheritance hierarchy. It specifies the details of the
 column which saves the name of the class, which the entity is
 actually instantiated as.
 
+如果未指定此注释，则discriminator列默认为长度 ``255`` 的名为 ``dtype`` 的字符串列。
 If this annotation is not specified, the discriminator column defaults
 to a string column of length 255 called ``dtype``.
 
-Required attributes:
+必需属性：
 
 
 -  **name**: The column name of the discriminator. This name is also
    used during Array hydration as key to specify the class-name.
+   discriminator的列名。在Array水合期间，此名称也用作指定类名的键。
 
-Optional attributes:
+可选属性：
 
 
--  **type**: By default this is string.
--  **length**: By default this is 255.
+-  **type**: 默认为 ``string`` 类型
+-  **length**: 默认为 ``255``。
 
 .. _annref_discriminatormap:
 
 @DiscriminatorMap
 ~~~~~~~~~~~~~~~~~~~~~
 
+discriminator映射是继承层次结构中最顶层/超类的必需注释。
+它唯一的参数是一个数组，它定义了应该在数据库中的哪个名称来保存哪个类。
+键是数据库值，值是类，该类可以是完全或非限定类名，具体取决于类是否在命名空间中。
 The discriminator map is a required annotation on the
 topmost/super class in an inheritance hierarchy. Its only argument is an
 array which defines which class should be saved under
@@ -318,9 +283,8 @@ depending on whether the classes are in the namespace or not.
 @Embeddable
 ~~~~~~~~~~~~~~~~~~~~~
 
-The embeddable annotation is required on a class, in order to make it
-embeddable inside an entity. It works together with the :ref:`@Embedded <annref_embedded>`
-annotation to establish the relationship between the two classes.
+要使一个类可被嵌入到一个实体中，则该类必需 ``@Embeddable`` 注释。
+该注释与 :ref:`@Embedded <annref_embedded>` 注释一起使用，以建立两个类之间的关系。
 
 .. code-block:: php
 
@@ -331,31 +295,29 @@ annotation to establish the relationship between the two classes.
      */
     class Address
     {
-    // ...
+        // ...
+    }
     class User
     {
         /**
          * @Embedded(class = "Address")
          */
         private $address;
-
+    }
 
 .. _annref_embedded:
 
 @Embedded
 ~~~~~~~~~~~~~~~~~~~~~
 
-The embedded annotation is required on an entity's member variable,
-in order to specify that it is an embedded class.
+要指定一个实体的成员变量是一个嵌入式类，则必须使用 ``@Embedded`` 注释。
 
-Required attributes:
+必需属性：
 
--  **class**: The embeddable class
+-  **class**: 可嵌入的类
 
 
 .. code-block:: php
-
-    <?php
 
     // ...
     class User
@@ -364,6 +326,7 @@ Required attributes:
          * @Embedded(class = "Address")
          */
         private $address;
+    }
 
     /**
      * @Embeddable
@@ -371,28 +334,22 @@ Required attributes:
     class Address
     {
     // ...
-
+    }
 
 .. _annref_entity:
 
 @Entity
 ~~~~~~~
 
-Required annotation to mark a PHP class as an entity. Doctrine manages
-the persistence of all classes marked as entities.
+要将一个PHP类标记为实体，则必须使用 ``@Entity`` 注释。Doctrine管理着所有标记为实体的类的持久性。
 
-Optional attributes:
+可选属性：
 
+-  **repositoryClass**: 指定 ``EntityRepository`` 的子类的FQCN。
+   鼓励使用实体的仓库来保持专用DQL/SQL操作与模型/域层的分离。
+-  **readOnly**:（> = 2.1）指定此实体标记为只读，不考虑变更跟踪。可以持久化和删除此类型的实体。
 
--  **repositoryClass**: Specifies the FQCN of a subclass of the
-   EntityRepository. Use of repositories for entities is encouraged to keep
-   specialized DQL and SQL operations separated from the Model/Domain
-   Layer.
--  **readOnly**: (>= 2.1) Specifies that this entity is marked as read only and not
-   considered for change-tracking. Entities of this type can be persisted
-   and removed though.
-
-Example:
+示例：
 
 .. code-block:: php
 
@@ -409,56 +366,52 @@ Example:
 
 @EntityResult
 ~~~~~~~~~~~~~~
-References an entity in the SELECT clause of a SQL query.
-If this annotation is used, the SQL statement should select all of the columns that are mapped to the entity object.
-This should include foreign key columns to related entities.
-The results obtained when insufficient data is available are undefined.
 
-Required attributes:
+引用SQL查询的 ``SELECT`` 子句中的一个实体。如果使用此注释，则SQL语句应选择映射到该实体对象的所有列。
+这应该包括相关实体的外键列。当数据不足时获得的结果是未定义的。
 
--  **entityClass**: The class of the result.
+必需属性：
 
-Optional attributes:
+-  **entityClass**: 结果的类。
 
--  **fields**: Array of @FieldResult, Maps the columns specified in the SELECT list of the query to the properties or fields of the entity class.
--  **discriminatorColumn**: Specifies the column name of the column in the SELECT list that is used to determine the type of the entity instance.
+可选属性：
+
+-  **fields**: Array of @FieldResult, Maps the columns specified in the SELECT list of the query to the properties or fields of the entity class.``@FieldResult`` 数组，将查询的SELECT列表中指定的列映射到实体类的属性或字段。
+-  **discriminatorColumn**: Specifies the column name of the column in the SELECT list that is used to determine the type of the entity instance.指定SELECT列表中用于确定实体实例类型的列的列名。
 
 .. _annref_field_result:
 
 @FieldResult
 ~~~~~~~~~~~~~
-Is used to map the columns specified in the SELECT list of the query to the properties or fields of the entity class.
 
-Required attributes:
+用于将查询的 ``SELECT`` 列表中指定的列映射到实体类的属性或字段。
 
--  **name**: Name of the persistent field or property of the class.
+必需属性：
+
+-  **name**: 类的持久字段或属性的名称。
 
 
-Optional attributes:
+可选属性：
 
--  **column**: Name of the column in the SELECT clause.
+-  **column**: ``SELECT`` 子句中列的名称。
 
 .. _annref_generatedvalue:
 
 @GeneratedValue
 ~~~~~~~~~~~~~~~~~~~~~
 
-Specifies which strategy is used for identifier generation for an
-instance variable which is annotated by :ref:`@Id <annref_id>`. This
-annotation is optional and only has meaning when used in
-conjunction with @Id.
+为一个用 :ref:`@Id <annref_id>` 注释的实例变量指定生成标识符的策略，
+此注释是可选的，仅在与 :ref:`@Id <annref_id>` 一起使用时才有意义。
 
-If this annotation is not specified with @Id the NONE strategy is
-used as default.
+如果未使用 ``@Id`` 指定此注释，则将使用 ``NONE`` 策略作为默认策略。
 
-Optional attributes:
+可选属性：
 
+-  **strategy**: 设置标识符生成策略的名称。
+   有效值为``AUTO``、``SEQUENCE``、``TABLE``、``IDENTITY``、``UUID``、``CUSTOM`` 以及 ``NONE``。
+   如果未指定，则默认值为 ``AUTO``。
 
--  **strategy**: Set the name of the identifier generation strategy.
-   Valid values are AUTO, SEQUENCE, TABLE, IDENTITY, UUID, CUSTOM and NONE.
-   If not specified, default value is AUTO.
-
-Example:
+示例：
 
 .. code-block:: php
 
@@ -475,14 +428,11 @@ Example:
 @HasLifecycleCallbacks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Annotation which has to be set on the entity-class PHP DocBlock to
-notify Doctrine that this entity has entity lifecycle callback
-annotations set on at least one of its methods. Using @PostLoad,
-@PrePersist, @PostPersist, @PreRemove, @PostRemove, @PreUpdate or
-@PostUpdate without this marker annotation will make Doctrine
-ignore the callbacks.
+必须在实体类的PHP文档区块上设置此注释，以通知Doctrine该实体至少设置了一个实体生命周期回调注释。
+使用了 ``@PostLoad``、``@PrePersist``、``@PostPersist``、``@PreRemove``、``@PostRemove``、``@PreUpdate`` 或
+``@PostUpdate`` 注释，但没有使用此注释，Doctrine将会忽略该回调。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -504,29 +454,26 @@ Example:
 @Index
 ~~~~~~~
 
-Annotation is used inside the :ref:`@Table <annref_table>` annotation on
-the entity-class level. It provides a hint to the SchemaTool to
-generate a database index on the specified table columns. It only
-has meaning in the SchemaTool schema generation context.
+此注释在实体级别的 :ref:`@Table <annref_table>` 注释中使用。
+它为 ``SchemaTool`` 提供了一个提示，以便在指定表的列上生成一个数据库索引。
+它仅在 ``SchemaTool`` 模式生成的上下文中有意义。
 
-Required attributes:
+必需属性：
 
 
--  **name**: Name of the Index
--  **columns**: Array of columns.
+-  **name**: 索引的名称
+-  **columns**: 列数组。
 
-Optional attributes:
+可选属性：
 
--  **options**: Array of platform specific options:
+-  **options**: 特定于平台的选项数组：
 
-   -  ``where``: SQL WHERE condition to be used for partial indexes. It will
-      only have effect on supported platforms.
+   -  ``where``: 用于部分索引的SQL ``WHERE`` 条件。它只会对受支持的平台产生影响。
 
-Basic example:
+基本示例：
 
 .. code-block:: php
 
-    <?php
     /**
      * @Entity
      * @Table(name="ecommerce_products",indexes={@Index(name="search_idx", columns={"name", "email"})})
@@ -535,7 +482,7 @@ Basic example:
     {
     }
 
-Example with partial indexes:
+部分索引的示例：
 
 .. code-block:: php
 
@@ -553,13 +500,10 @@ Example with partial indexes:
 @Id
 ~~~~~~~
 
-The annotated instance variable will be marked as entity
-identifier, the primary key in the database. This annotation is a
-marker only and has no required or optional attributes. For
-entities that have multiple identifier columns each column has to
-be marked with @Id.
+带此注释的实例变量将被标记为实体的标识符，即数据库中的主键。
+此注释仅是一个标记，没有必需或可选属性。对于具有多个标识符列的实体，每个列都必须使用 ``@Id`` 进行标记。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -575,16 +519,12 @@ Example:
 @InheritanceType
 ~~~~~~~~~~~~~~~~~~~~~
 
-In an inheritance hierarchy you have to use this annotation on the
-topmost/super class to define which strategy should be used for
-inheritance. Currently Single Table and Class Table Inheritance are
-supported.
+在一个继承层次中，你必须在最顶层/超类上使用此注释来定义应该用于继承的策略。目前支持单表和类表继承。
 
-This annotation has always been used in conjunction with the
-:ref:`@DiscriminatorMap <annref_discriminatormap>` and
-:ref:`@DiscriminatorColumn <annref_discriminatorcolumn>` annotations.
+此注释始终与 :ref:`@DiscriminatorMap <annref_discriminatormap>` 和
+:ref:`@DiscriminatorColumn <annref_discriminatorcolumn>` 注释一起使用。
 
-Examples:
+示例：
 
 .. code-block:: php
 
@@ -616,42 +556,40 @@ Examples:
 @JoinColumn
 ~~~~~~~~~~~~~~
 
-This annotation is used in the context of relations in
-:ref:`@ManyToOne <annref_manytoone>`, :ref:`@OneToOne <annref_onetoone>` fields
-and in the Context of :ref:`@JoinTable <annref_jointable>` nested inside
-a @ManyToMany. This annotation is not required. If it is not
-specified the attributes *name* and *referencedColumnName* are
-inferred from the table and primary key names.
+此注释用于 :ref:`@ManyToOne <annref_manytoone>`、:ref:`@OneToOne <annref_onetoone>`
+字段的关系上下文中，以及嵌套在 :ref:`@ManyToMany <annref_manytomany>` 内的
+:ref:`@JoinTable <annref_jointable>` 的上下文中。
+此注释不是必需的。如果未指定，则从表和主键的名称中推断出该属性的 *name* 和 *referencedColumnName*。
 
-Required attributes:
+必需属性：
 
+-  **name**: 保持此关系的外键标识符的列名。在 ``@JoinTable`` 的上下文中，它指定了连接表中的列名。
+-  **referencedColumnName**: 用于连接此关系的主键标识符的名称。
 
--  **name**: Column name that holds the foreign key identifier for
-   this relation. In the context of @JoinTable it specifies the column
-   name in the join table.
--  **referencedColumnName**: Name of the primary key identifier that
-   is used for joining of this relation.
-
-Optional attributes:
-
+可选属性：
 
 -  **unique**: Determines whether this relation is exclusive between the
    affected entities and should be enforced as such on the database
    constraint level. Defaults to false.
+   确定此关系在受影响的实体之间是否是唯一的，并且应在数据库约束级别上强制执行。默认为 ``false``。
 -  **nullable**: Determine whether the related entity is required, or if
    null is an allowed state for the relation. Defaults to true.
--  **onDelete**: Cascade Action (Database-level)
+   确定相关实体是否是必需的，或者 ``null`` 是否为此关系的允许状态。默认为 ``true``。
+-  **onDelete**: 级联动作（数据库级）
 -  **columnDefinition**: DDL SQL snippet that starts after the column
    name and specifies the complete (non-portable!) column definition.
    This attribute enables the use of advanced RMDBS features. Using
    this attribute on @JoinColumn is necessary if you need slightly
    different column definitions for joining columns, for example
-   regarding NULL/NOT NULL defaults. However by default a
-   "columnDefinition" attribute on :ref:`@Column <annref_column>` also sets
-   the related @JoinColumn's columnDefinition. This is necessary to
-   make foreign keys work.
+   regarding NULL/NOT NULL defaults.
+   However by default a "columnDefinition" attribute on :ref:`@Column <annref_column>` also sets the related @JoinColumn's columnDefinition. This is necessary to make foreign keys work.
+   在列名后面开始并指定完整（非可移植！）列定义的DDL SQL片段。
+   此属性允许使用高级RMDBS功能。如果你需要稍微不同的列定义来连接列，则必须在
+   ``@JoinColumn`` 上使用此属性，例如，关于 ``NULL`` / ``NOT NULL`` 默认值。
+   但是，默认情况下，:ref:`@Column <annref_column>` 上的一个 ``columnDefinition``
+   属性也会设置相关的 ``@JoinColumn`` 的 ``columnDefinition``。这是使外键工作所必需的。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -667,33 +605,27 @@ Example:
 @JoinColumns
 ~~~~~~~~~~~~~~
 
-An array of @JoinColumn annotations for a
-:ref:`@ManyToOne <annref_manytoone>` or :ref:`@OneToOne <annref_onetoone>`
-relation with an entity that has multiple identifiers.
+与具有多个标识符的一个实体的 :ref:`@ManyToOne <annref_manytoone>` 或
+:ref:`@OneToOne <annref_onetoone>` 关系的
+:ref:`@JoinColumn <annref_joincolumn>` 注释数组。
 
 .. _annref_jointable:
 
 @JoinTable
 ~~~~~~~~~~~~~~
 
-Using :ref:`@OneToMany <annref_onetomany>` or
-:ref:`@ManyToMany <annref_manytomany>` on the owning side of the relation
-requires to specify the @JoinTable annotation which describes the
-details of the database join table. If you do not specify
-@JoinTable on these relations reasonable mapping defaults apply
-using the affected table and the column names.
+在关系的拥有方使用 :ref:`@OneToMany <annref_onetomany>` 或
+:ref:`@ManyToMany <annref_manytomany>` 时需要指定 ``@JoinTable``
+注释，该注释用于描述数据库连接表的详细信息。
+如果未在这些关系上指定 ``@JoinTable``，则使用受影响的表和列名称来应用合理的映射默认值。
 
-Optional attributes:
+可选属性：
 
+-  **name**: 连接表的名称
+-  **joinColumns**: 一个 ``@JoinColumn`` 注释数组，用于描述拥有方实体表和连接表之间的连接关系。
+-  **inverseJoinColumns**: 一个 ``@JoinColumn`` 注释数组，用于描述反方实体表和连接表之间的连接关系。
 
--  **name**: Database name of the join-table
--  **joinColumns**: An array of @JoinColumn annotations describing the
-   join-relation between the owning entities table and the join table.
--  **inverseJoinColumns**: An array of @JoinColumn annotations
-   describing the join-relation between the inverse entities table and
-   the join table.
-
-Example:
+示例：
 
 .. code-block:: php
 
@@ -712,25 +644,22 @@ Example:
 @ManyToOne
 ~~~~~~~~~~~~~~
 
-Defines that the annotated instance variable holds a reference that
-describes a many-to-one relationship between two entities.
+定义已注释的实例变量保持一个描述两个实体之间多对一关系的引用。
+Defines that the annotated instance variable holds a reference that describes a many-to-one relationship between two entities.
 
-Required attributes:
+必需属性：
 
+-  **targetEntity**: 引用的目标实体的FQCN。
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
 
--  **targetEntity**: FQCN of the referenced target entity. Can be the
-   unqualified class name if both classes are in the same namespace.
-   *IMPORTANT:* No leading backslash!
-
-Optional attributes:
+可选属性：
 
 
--  **cascade**: Cascade Option
--  **fetch**: One of LAZY or EAGER
--  inversedBy - The inversedBy attribute designates the field in
-   the entity that is the inverse side of the relationship.
+-  **cascade**: 级联选项
+-  **fetch**: ``LAZY`` 或 ``EAGER`` 之一
+-  **inversedBy**: - 该属性用于指定此关系的反方实体中的字段。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -745,30 +674,29 @@ Example:
 @ManyToMany
 ~~~~~~~~~~~~~~
 
+定义带注释的实例变量在两个实体之间保持多对多关系。
+:ref:`@JoinTable <annref_jointable>` 是一个附加的可选注释，它使用两个相关实体的表和名称具有合理的默认配置值。
 Defines that the annotated instance variable holds a many-to-many relationship
 between two entities. :ref:`@JoinTable <annref_jointable>` is an
 additional, optional annotation that has reasonable default
 configuration values using the table and names of the two related
 entities.
 
-Required attributes:
+必需属性：
 
+-  **targetEntity**: 引用的目标实体的FQCN。
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
 
--  **targetEntity**: FQCN of the referenced target entity. Can be the
-   unqualified class name if both classes are in the same namespace.
-   *IMPORTANT:* No leading backslash!
-
-Optional attributes:
-
+可选属性：
 
 -  **mappedBy**: This option specifies the property name on the
    targetEntity that is the owning side of this relation. It is a
    required attribute for the inverse side of a relationship.
--  **inversedBy**: The inversedBy attribute designates the field in the
-   entity that is the inverse side of the relationship.
--  **cascade**: Cascade Option
--  **fetch**: One of LAZY, EXTRA_LAZY or EAGER
--  **indexBy**: Index the collection by a field on the target entity.
+   此选项指定 ``targetEntity`` 上的属性名称，该属性是此关系的拥有方。它是反方关系的必需属性。
+-  **inversedBy**: 该属性用于指定此关系的反方实体中的字段。
+-  **cascade**: 级联选项
+-  **fetch**: ``LAZY``、``EXTRA_LAZY`` 或 ``EAGER`` 之一
+-  **indexBy**: Index the collection by a field on the target entity.通过目标实体上的字段索引集合。
 
 .. note::
 
@@ -776,8 +704,9 @@ Optional attributes:
     be the owning side (the side that defines the @JoinTable and/or
     does not make use of the mappedBy attribute, thus using a default
     join table).
+    对于双向的 ``ManyToMany`` 关系，任何一方都可能是拥有方（定义@JoinTable的一方和/或不使用mappedBy属性，因此使用默认连接表）。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -805,22 +734,22 @@ Example:
 @MappedSuperclass
 ~~~~~~~~~~~~~~~~~~~~~
 
+映射的超类是一个抽象或具体的类，它为其子类提供持久的实体状态和映射信息，但它本身不是一个实体。
+此注释在类的文档区块上指定，没有其他属性。
 A mapped superclass is an abstract or concrete class that provides
 persistent entity state and mapping information for its subclasses,
 but which is not itself an entity. This annotation is specified on
 the Class docblock and has no additional attributes.
 
-The @MappedSuperclass annotation cannot be used in conjunction with
-@Entity. See the Inheritance Mapping section for
-:doc:`more details on the restrictions of mapped superclasses <inheritance-mapping>`.
+``@MappedSuperclass`` 注释不能与 ``@Entity`` 一起使用。
+有关映射超类限制的更多详细信息，请参阅 :doc:`继承映射 <inheritance-mapping>` 章节。
 
-Optional attributes:
+可选属性：
 
+-  **repositoryClass**:（> = 2.2）指定 ``EntityRepository`` 的子类的FQCN。
+   这将继承该已映射超类的所有子类。
 
--  **repositoryClass**: (>= 2.2) Specifies the FQCN of a subclass of the EntityRepository.
-   That will be inherited for all subclasses of that Mapped Superclass.
-
-Example:
+示例：
 
 .. code-block:: php
 
@@ -845,22 +774,20 @@ Example:
 
 @NamedNativeQuery
 ~~~~~~~~~~~~~~~~~
-Is used to specify a native SQL named query.
-The NamedNativeQuery annotation can be applied to an entity or mapped superclass.
 
-Required attributes:
+用于指定一个原生SQL命名查询。此注释可以应用于实体或已映射超类。
 
--  **name**: The name used to refer to the query with the EntityManager methods that create query objects.
--  **query**: The SQL query string.
+必需属性：
 
+-  **name**: The name used to refer to the query with the EntityManager methods that create query objects.用于通过创建查询对象的EntityManager方法引用查询的名称。
+-  **query**: SQL查询字符串
 
-Optional attributes:
+可选属性：
 
--  **resultClass**: The class of the result.
--  **resultSetMapping**: The name of a SqlResultSetMapping, as defined in metadata.
+-  **resultClass**: 结果的类。
+-  **resultSetMapping**: The name of a SqlResultSetMapping, as defined in metadata.SqlResultSetMapping的名称，如元数据中所定义。
 
-
-Example:
+示例：
 
 .. code-block:: php
 
@@ -917,31 +844,31 @@ Example:
 @OneToOne
 ~~~~~~~~~~~~~~
 
+``@OneToOne`` 注释几乎与 :ref:`@ManyToOne <annref_manytoone>` 一样，只能指定一个附加选项。
+@JoinColumn的配置默认值 使用目标实体表，主键列名也适用于此处。
 The @OneToOne annotation works almost exactly as the
 :ref:`@ManyToOne <annref_manytoone>` with one additional option which can
 be specified. The configuration defaults for
 :ref:`@JoinColumn <annref_joincolumn>` using the target entity table and
 primary key column names apply here too.
 
-Required attributes:
+必需属性：
+
+-  **targetEntity**: 引用的目标实体的FQCN。
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
+
+可选属性：
 
 
--  **targetEntity**: FQCN of the referenced target entity. Can be the
-   unqualified class name if both classes are in the same namespace.
-   *IMPORTANT:* No leading backslash!
-
-Optional attributes:
-
-
--  **cascade**: Cascade Option
--  **fetch**: One of LAZY or EAGER
+-  **cascade**: 级联选项
+-  **fetch**: ``LAZY`` 或 ``EAGER`` 之一
 -  **orphanRemoval**: Boolean that specifies if orphans, inverse
    OneToOne entities that are not connected to any owning instance,
    should be removed by Doctrine. Defaults to false.
--  **inversedBy**: The inversedBy attribute designates the field in the
-   entity that is the inverse side of the relationship.
+   布尔值，用于指定是否应该由Doctrine删除孤立(orphan)，即未连接到任何拥有方实例的反向一对一实体。默认为 ``false``。
+-  **inversedBy**: 该属性用于指定此关系的反方实体中的字段。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -957,27 +884,28 @@ Example:
 @OneToMany
 ~~~~~~~~~~~~~~
 
-Required attributes:
+必需属性：
 
 
--  **targetEntity**: FQCN of the referenced target entity. Can be the
-   unqualified class name if both classes are in the same namespace.
-   *IMPORTANT:* No leading backslash!
+-  **targetEntity**: 引用的目标实体的FQCN。
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
 
-Optional attributes:
+可选属性：
 
 
--  **cascade**: Cascade Option
+-  **cascade**: 级联选项
 -  **orphanRemoval**: Boolean that specifies if orphans, inverse
    OneToOne entities that are not connected to any owning instance,
    should be removed by Doctrine. Defaults to false.
+   布尔值，用于指定是否应该由Doctrine删除孤立(orphan)，即未连接到任何拥有方实例的反向一对一实体。默认为 ``false``。
 -  **mappedBy**: This option specifies the property name on the
    targetEntity that is the owning side of this relation. Its a
    required attribute for the inverse side of a relationship.
--  **fetch**: One of LAZY, EXTRA_LAZY or EAGER.
--  **indexBy**: Index the collection by a field on the target entity.
+   此选项指定targetEntity上的属性名称，该属性是此关系的拥有方。它是关系反面的必需属性。
+-  **fetch**: ``LAZY``、``EXTRA_LAZY`` 或 ``EAGER`` 之一。
+-  **indexBy**: Index the collection by a field on the target entity.通过目标实体上的字段索引集合。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -992,122 +920,102 @@ Example:
 @OrderBy
 ~~~~~~~~~~~~~~
 
-Optional annotation that can be specified with a
-:ref:`@ManyToMany <annref_manytomany>` or :ref:`@OneToMany <annref_onetomany>`
-annotation to specify by which criteria the collection should be
-retrieved from the database by using an ORDER BY clause.
+可以在使用 :ref:`@ManyToMany <annref_manytomany>` 或 :ref:`@OneToMany <annref_onetomany>` 的注释上指定的可选注释，以指定应使用 ``ORDER BY`` 子句从数据库中检索集合的条件。
 
-This annotation requires a single non-attributed value with an DQL
-snippet:
+此注释要求单个使用DQL代码段的非属性值：
 
-Example:
+示例：
 
 .. code-block:: php
 
-    <?php
     /**
      * @ManyToMany(targetEntity="Group")
      * @OrderBy({"name" = "ASC"})
      */
     private $groups;
 
-The DQL Snippet in OrderBy is only allowed to consist of
-unqualified, unquoted field names and of an optional ASC/DESC
-positional statement. Multiple Fields are separated by a comma (,).
-The referenced field names have to exist on the ``targetEntity``
-class of the ``@ManyToMany`` or ``@OneToMany`` annotation.
+``@OrderBy`` 中的DQL代码段只允许由未限定的、未引用的字段名称和一个可选的
+``ASC`` / ``DESC`` 位置语句组成。多个字段可用逗号（``,``）分隔。
+引用的字段名称必须存在于 ``@ManyToMany`` 或 ``@OneToMany`` 注释的 ``targetEntity`` 类中。
 
 .. _annref_postload:
 
 @PostLoad
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PostLoad event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PostLoad`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_postpersist:
 
 @PostPersist
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PostPersist event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PostPersist`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_postremove:
 
 @PostRemove
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PostRemove event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PostRemove`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_postupdate:
 
 @PostUpdate
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PostUpdate event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PostUpdate`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_prepersist:
 
 @PrePersist
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PrePersist event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PrePersist`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_preremove:
 
 @PreRemove
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PreRemove event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PreRemove`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_preupdate:
 
 @PreUpdate
 ~~~~~~~~~~~~~~
 
-Marks a method on the entity to be called as a @PreUpdate event.
-Only works with @HasLifecycleCallbacks in the entity class PHP
-DocBlock.
+标记实体上的一个方法，该方法将被 ``@PreUpdate`` 事件调用。
+此注释仅限于与实体类的PHP文档区块中的 ``@HasLifecycleCallbacks`` 注释一起使用。
 
 .. _annref_sequencegenerator:
 
 @SequenceGenerator
 ~~~~~~~~~~~~~~~~~~~~~
 
-For use with @GeneratedValue(strategy="SEQUENCE") this
-annotation allows to specify details about the sequence, such as
-the increment size and initial values of the sequence.
+此注释与 ``@GeneratedValue(strategy="SEQUENCE")``
+配套使用，它允许指定关于序列的细节，例如序列的增量大小和初始值。
 
-Required attributes:
+必需属性：
 
+-  **sequenceName**: 序列的名称
 
--  **sequenceName**: Name of the sequence
+可选属性：
 
-Optional attributes:
+-  **allocationSize**: 在获取序列时，按照分配大小递增该序列。
+   大于 ``1`` 的值允许对每个请求创建多个新实体的情况进行优化。默认为 ``10``
+-  **initialValue**: 指定序列应从哪个值开始，默认为 ``1``。
 
-
--  **allocationSize**: Increment the sequence by the allocation size
-   when its fetched. A value larger than 1 allows optimization for
-   scenarios where you create more than one new entity per request.
-   Defaults to 10
--  **initialValue**: Where the sequence starts, defaults to 1.
-
-Example:
+示例：
 
 .. code-block:: php
 
-    <?php
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
@@ -1120,20 +1028,19 @@ Example:
 
 @SqlResultSetMapping
 ~~~~~~~~~~~~~~~~~~~~
-The SqlResultSetMapping annotation is used to specify the mapping of the result of a native SQL query.
-The SqlResultSetMapping annotation can be applied to an entity or mapped superclass.
 
-Required attributes:
+此注释用于指定一个原生SQL查询结果的映射。此注释可以应用于一个实体或已映射超类。
 
--  **name**: The name given to the result set mapping, and used to refer to it in the methods of the Query API.
+必需属性：
 
+-  **name**: 给结果集映射的名称，用于在Query API的方法中引用它。
 
-Optional attributes:
+可选属性：
 
--  **entities**: Array of @EntityResult, Specifies the result set mapping to entities.
--  **columns**: Array of @ColumnResult, Specifies the result set mapping to scalar values.
+-  **entities**: ``@EntityResult`` 数组，指定映射到实体的结果集。
+-  **columns**: ``@ColumnResult`` 数组，指定映射到标量值的结果集。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -1221,24 +1128,22 @@ Example:
 @Table
 ~~~~~~~
 
-Annotation describes the table an entity is persisted in. It is
-placed on the entity-class PHP DocBlock and is optional. If it is
-not specified the table name will default to the entity's
-unqualified classname.
+此注释描述了一个实体持久化的表。它放在实体类的PHP文档区块上并且是可选的。
+如果未指定，则表名称将默认为实体的非限定类名。
 
-Required attributes:
+必需属性：
 
 
--  **name**: Name of the table
+-  **name**: 表名称
 
-Optional attributes:
+可选属性：
 
 
--  **indexes**: Array of @Index annotations
--  **uniqueConstraints**: Array of @UniqueConstraint annotations.
--  **schema**: (>= 2.5) Name of the schema the table lies in.
+-  **indexes**: :ref:`@Index <annref_index>` 注释数组
+-  **uniqueConstraints**: :ref:`@UniqueConstraint <annref_uniqueconstraint>` 注释数组
+-  **schema**: （> = 2.5）表所在的模式的名称
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -1258,26 +1163,23 @@ Example:
 @UniqueConstraint
 ~~~~~~~~~~~~~~~~~~~~~
 
-Annotation is used inside the :ref:`@Table <annref_table>` annotation on
-the entity-class level. It allows to hint the SchemaTool to
-generate a database unique constraint on the specified table
-columns. It only has meaning in the SchemaTool schema generation
-context.
+此注释在实体级别的 :ref:`@Table <annref_table>` 注释中使用。
+它允许提示 ``SchemaTool`` 在指定的表的列上生成一个数据库唯一约束。
+它仅在 ``SchemaTool`` 模式生成上下文中有意义。
 
-Required attributes:
+必需属性：
 
 
--  **name**: Name of the Index
--  **columns**: Array of columns.
+-  **name**: 索引的名称
+-  **columns**: 列数组。
 
-Optional attributes:
+可选属性：
 
--  **options**: Array of platform specific options:
+-  **options**: 特定于平台的选项数组：
 
-   -  ``where``: SQL WHERE condition to be used for partial indexes. It will
-      only have effect on supported platforms.
+   -  ``where``: 用于部分索引的SQL ``WHERE`` 条件。它只会对支持的平台产生影响。
 
-Basic example:
+基本示例：
 
 .. code-block:: php
 
@@ -1290,7 +1192,7 @@ Basic example:
     {
     }
 
-Example with partial indexes:
+部分索引的示例：
 
 .. code-block:: php
 
@@ -1308,13 +1210,11 @@ Example with partial indexes:
 @Version
 ~~~~~~~~
 
-Marker annotation that defines a specified column as version attribute used in
-an :ref:`optimistic locking <transactions-and-concurrency_optimistic-locking>`
-scenario. It only works on :ref:`@Column <annref_column>` annotations that have
-the type ``integer`` or ``datetime``. Combining ``@Version`` with
-:ref:`@Id <annref_id>` is not supported.
+标记注释，将一个指定列定义为一个 :ref:`乐观锁 <transactions-and-concurrency_optimistic-locking>`
+方案中使用的版本属性。它仅适用于具有 ``integer`` 或 ``datetime``
+类型的 :ref:`@Column <annref_column>` 注释。不支持与 :ref:`@Id <annref_id>` 结合使用。
 
-Example:
+示例：
 
 .. code-block:: php
 
@@ -1324,4 +1224,3 @@ Example:
      * @Version
      */
     protected $version;
-

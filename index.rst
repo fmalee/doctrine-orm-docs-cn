@@ -72,7 +72,7 @@ Doctrine DBAL and Doctrine Common 都有自己的文档。
 * :doc:`提升性能 <reference/improving-performance>`
 * :doc:`高速缓存 <reference/caching>`
 * :doc:`局部对象 <reference/partial-objects>`
-* :doc:`更改跟踪政策 <reference/change-tracking-policies>`
+* :doc:`变更跟踪策略 <reference/change-tracking-policies>`
 * :doc:`最佳实践 <reference/best-practices>`
 * :doc:`元数据驱动 <reference/metadata-drivers>`
 * :doc:`批处理 <reference/batch-processing>`
