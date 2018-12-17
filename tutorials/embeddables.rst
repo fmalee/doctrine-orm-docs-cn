@@ -1,19 +1,15 @@
-Separating Concerns using Embeddables
+使用可嵌入类来分离关注点
 -------------------------------------
 
-Embeddables are classes which are not entities themselves, but are embedded
-in entities and can also be queried in DQL. You'll mostly want to use them
-to reduce duplication or separating concerns. Value objects such as date range
-or address are the primary use case for this feature. 
+可嵌入(Embeddable)类本身不是实体，但可以嵌入到实体中，也可以在DQL中进行查询。
+你通常希望使用它们来减少重复或分离关注点。日期范围或地址等值对象是此功能的主要用例。
 
 .. note::
 
-    Embeddables can only contain properties with basic ``@Column`` mapping.
+    可嵌入类只能包含具有基本 ``@Column`` 映射的属性。
 
-For the purposes of this tutorial, we will assume that you have a ``User``
-class in your application and you would like to store an address in
-the ``User`` class. We will model the ``Address`` class as an embeddable
-instead of simply adding the respective columns to the ``User`` class.
+出于本教程的目的，我们假设你的应用中有一个 ``User`` 类，并且你希望在类中存储一个地址。
+我们将 ``Address`` 类建模为一个可嵌入类，而不是简单地将相应的列添加到 ``User`` 类中。
 
 .. configuration-block::
 
@@ -75,16 +71,12 @@ instead of simply adding the respective columns to the ``User`` class.
             city: { type: string }
             country: { type: string }
 
-In terms of your database schema, Doctrine will automatically inline all
-columns from the ``Address`` class into the table of the ``User`` class,
-just as if you had declared them directly there.
+就数据库模式而言，Doctrine会自动将 ``Address`` 类中的所有列内联到 ``User`` 类的表中，就像你直接在那里声明它们一样。
 
-Initializing embeddables
+初始化可嵌入类
 ------------------------
 
-In case all fields in the embeddable are ``nullable``, you might want
-to initialize the embeddable, to avoid getting a null value instead of
-the embedded object.
+如果可嵌入类中的所有字段都是 ``nullable``，则可能需要初始化该可嵌入类，以避免获取一个 ``null`` 值而不是嵌入对象。
 
 .. code-block:: php
 
@@ -93,19 +85,16 @@ the embedded object.
         $this->address = new Address();
     }
 
-Column Prefixing
+列前缀
 ----------------
 
-By default, Doctrine names your columns by prefixing them, using the value
-object name.
+默认情况下，Doctrine使用值对象的名称为列添加前缀来命名该列。
 
-Following the example above, your columns would be named as ``address_street``,
-``address_postalCode``...
+按照上面的示例，你的列将命名为 ``address_street``、``address_postalCode`` ...
 
-You can change this behaviour to meet your needs by changing the
-``columnPrefix`` attribute in the ``@Embedded`` notation.
+你可以通过更改 ``@Embedded`` 注释中的 ``columnPrefix`` 属性来更改此行为以满足你的需要。
 
-The following example shows you how to set your prefix to ``myPrefix_``:
+以下示例展示了如何将前缀设置为 ``myPrefix_``：
 
 .. configuration-block::
 
@@ -135,8 +124,7 @@ The following example shows you how to set your prefix to ``myPrefix_``:
               class: Address
               columnPrefix: myPrefix_
 
-To have Doctrine drop the prefix and use the value object's property name
-directly, set ``columnPrefix=false`` (``use-column-prefix="false"`` for XML):
+要让Doctrine删除前缀并直接使用值对象的属性名，请设置为 ``columnPrefix=false`` （对于XML：``use-column-prefix="false"``）：
 
 .. configuration-block::
 
@@ -170,10 +158,8 @@ directly, set ``columnPrefix=false`` (``use-column-prefix="false"`` for XML):
 DQL
 ---
 
-You can also use mapped fields of embedded classes in DQL queries, just
-as if they were declared in the ``User`` class:
+你还可以在DQL查询中使用嵌入类的映射字段，就像已经在 ``User`` 类中声明了它们一样：
 
 .. code-block:: sql
 
     SELECT u FROM User u WHERE u.address.city = :myCity
-

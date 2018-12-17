@@ -1,45 +1,40 @@
-Extra Lazy Associations
+超级延迟关联
 =======================
 
 .. versionadded:: 2.1
 
-In many cases associations between entities can get pretty large. Even in a simple scenario like a blog.
-where posts can be commented, you always have to assume that a post draws hundreds of comments.
-In Doctrine 2.0 if you accessed an association it would always get loaded completely into memory. This
-can lead to pretty serious performance problems, if your associations contain several hundreds or thousands
-of entities.
+在许多情况下，实体之间的关联可能变得非常大。
+例如在像博客这样的简单场景中，如果帖子可以评论，你总是要假设一篇文章吸引了数百条评论。
+在Doctrine 2.0中，如果你访问了一个关联，它将始终被完全加载到内存中。
+如果你的关联包含数百或数千个实体，就可能会导致严重的性能问题。
 
-With Doctrine 2.1 a feature called **Extra Lazy** is introduced for associations. Associations
-are marked as **Lazy** by default, which means the whole collection object for an association is populated
-the first time its accessed. If you mark an association as extra lazy the following methods on collections
-can be called without triggering a full load of the collection:
+使用Doctrine 2.1，为关联引入了一个名为 **超级延迟** 的功能。
+默认情况下，关联标记为 **延迟**，这意味着一个关联的整个集合对象会在第一次访问时填充。
+如果将关联标记为 *超级延迟*，则可以在不触发集合的完整加载的情况下调用集合上的以下方法：
 
 -  ``Collection#contains($entity)``
--  ``Collection#containsKey($key)`` (available with Doctrine 2.5)
+-  ``Collection#containsKey($key)`` （可与Doctrine 2.5一起使用）
 -  ``Collection#count()``
--  ``Collection#get($key)``  (available with Doctrine 2.4)
+-  ``Collection#get($key)`` （可与Doctrine 2.4一起使用）
 -  ``Collection#slice($offset, $length = null)``
 
-For each of the above methods the following semantics apply:
+对于上述每种方法，适用以下语义：
 
--  For each call, if the Collection is not yet loaded, issue a straight SELECT statement against the database.
--  For each call, if the collection is already loaded, fallback to the default functionality for lazy collections. No additional SELECT statements are executed.
+-  对于每个调用，如果集合尚未加载，则对数据库发出一个直接的 ``SELECT`` 语句。
+-  对于每个调用，如果集合已经加载，则回退到延迟集合的默认功能。不再执行额外的 ``SELECT`` 语句。
 
-Additionally even with Doctrine 2.0 the following methods do not trigger the collection load:
+此外，即使使用Doctrine 2.0，以下方法也不会触发集合的加载：
 
 -  ``Collection#add($entity)``
--  ``Collection#offsetSet($key, $entity)`` - ArrayAccess with no specific key ``$coll[] = $entity``, it does
-   not work when setting specific keys like ``$coll[0] = $entity``.
+-  ``Collection#offsetSet($key, $entity)`` - 没有特定 ``$coll[] = $entity`` 键的 ``ArrayAccess``，在设置特定
+   ``$coll[0] = $entity`` 键时不起作用。
 
-With extra lazy collections you can now not only add entities to large collections but also paginate them
-easily using a combination of ``count`` and ``slice``.
+配合超级延迟集合，你现在不仅可以添加实体到大型集合，而且容易使用的 ``count`` 和 ``slice`` 组合进行分页。
 
-
-Enabling Extra-Lazy Associations
+启用超级延迟关联
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The mapping configuration is simple. Instead of using the default value of ``fetch="LAZY"`` you have to
-switch to extra lazy as shown in these examples:
+该映射配置很简单。不是使用 ``fetch="LAZY"`` 默认值，而是切换到 ``EXTRA_LAZY``，如下面的示例所示：
 
 .. configuration-block::
 
@@ -83,4 +78,3 @@ switch to extra lazy as shown in these examples:
               targetEntity: CmsUser
               mappedBy: groups
               fetch: EXTRA_LAZY
-

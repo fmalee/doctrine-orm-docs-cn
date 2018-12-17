@@ -1,15 +1,12 @@
-Override Field Association Mappings In Subclasses
+重写子类中的字段关联映射
 -------------------------------------------------
 
-Sometimes there is a need to persist entities but override all or part of the
-mapping metadata. Sometimes also the mapping to override comes from entities
-using traits where the traits have mapping metadata.
-This tutorial explains how to override mapping metadata,
-i.e. attributes and associations metadata in particular. The example here shows
-the overriding of a class that uses a trait but is similar when extending a base
-class as shown at the end of this tutorial.
+有时要持久化实体但需要重写全部或部分映射元数据。
+有时候，重写的映射来自使用 **trait** 的实体，而 *trait* 本身具有映射元数据。
+本教程将介绍如何重写映射元数据，特别是属性和关联元数据。
+此处的示例显示了使用一个trait的类的重写，但如本教程末尾所示，在继承基类时也适用此重写示例。
 
-Suppose we have a class ExampleEntityWithOverride. This class uses trait ExampleTrait:
+假设我们有一个 ``ExampleEntityWithOverride`` 类。这个类使用 ``ExampleTrait`` trait：
 
 .. code-block:: php
 
@@ -51,10 +48,9 @@ Suppose we have a class ExampleEntityWithOverride. This class uses trait Example
         private $id;
     }
 
-The docblock is showing metadata override of the attribute and association type. It
-basically changes the names of the columns mapped for a property ``foo`` and for
-the association ``bar`` which relates to Bar class shown above. Here is the trait
-which has mapping metadata that is overridden by the annotation above:
+该文档区块展示了属性和关联类型的元数据重写。
+它基本上更改了映射到 ``foo`` 属性的列的名称以及与上面显示的 ``Bar`` 类相关的 ``bar`` 关联。
+这是具有映射元数据的 ``trait``，该元数据被上面的注释重写：
 
 .. code-block:: php
 
@@ -79,7 +75,7 @@ which has mapping metadata that is overridden by the annotation above:
         protected $bar;
     }
 
-The case for just extending a class would be just the same but:
+只是继承一个类的情况也是一样的：
 
 .. code-block:: php
 
@@ -89,4 +85,4 @@ The case for just extending a class would be just the same but:
         // ...
     }
 
-Overriding is also supported via XML and YAML (:ref:`examples <inheritence_mapping_overrides>`).
+XML和YAML（:ref:`示例 <inheritence_mapping_overrides>`）也支持重写。

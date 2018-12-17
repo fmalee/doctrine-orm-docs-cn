@@ -1,16 +1,12 @@
-Ordering To-Many Associations
+有序关联
 -----------------------------
 
-There are use-cases when you'll want to sort collections when they are
-retrieved from the database. In userland you do this as long as you
-haven't initially saved an entity with its associations into the
-database. To retrieve a sorted collection from the database you can
-use the ``@OrderBy`` annotation with an collection that specifies
-an DQL snippet that is appended to all queries with this
-collection.
+有些用例需要在从数据库中检索时对集合进行排序。
+在用户空间中，只要你最初没有将具有关联的实体保存到数据库中，就可以执行此操作。
+要从数据库中检索一个已排序的集合，你可以将 ``@OrderBy``
+注释与一个集合一起使用，用来指定一个会附加到具有此集合的所有查询的DQL片段。
 
-Additional to any ``@OneToMany`` or ``@ManyToMany`` annotation you
-can specify the ``@OrderBy`` in the following way:
+除了添加到任何 ``@OneToMany`` 或 ``@ManyToMany`` 注释之外，你还可以通过以下方式来指定 ``@OrderBy``：
 
 .. configuration-block::
 
@@ -21,7 +17,7 @@ can specify the ``@OrderBy`` in the following way:
         class User
         {
             // ...
-        
+
             /**
              * @ManyToMany(targetEntity="Group")
              * @OrderBy({"name" = "ASC"})
@@ -58,53 +54,42 @@ can specify the ``@OrderBy`` in the following way:
                   group_id:
                     referencedColumnName: id
 
-The DQL Snippet in OrderBy is only allowed to consist of
-unqualified, unquoted field names and of an optional ASC/DESC
-positional statement. Multiple Fields are separated by a comma (,).
-The referenced field names have to exist on the ``targetEntity``
-class of the ``@ManyToMany`` or ``@OneToMany`` annotation.
+``@OrderBy`` 中的DQL代码段只允许由未限定的、未引用的字段名称和一个可选的
+``ASC`` / ``DESC`` 位置语句组成。多个字段可用逗号（``,``）分隔。
+引用的字段名称必须存在于 ``@ManyToMany`` 或 ``@OneToMany`` 注释的 ``targetEntity`` 类中。
 
-The semantics of this feature can be described as follows.
+该功能的语义可以描述如下：
 
+-  ``@OrderBy`` 充当给定字段的一个隐式 ``ORDER BY`` 子句，该子句会附加到所有显式给定的 ``ORDER BY`` 项中。
+-  始终以有序的方式来检索所有拥有有序类型的集合。
+-  为了保持较低的数据库影响，如果在DQL查询中对集合进行提取联接，则这些隐式 ``ORDER BY`` 项仅添加到一个DQL查询中。
 
--  ``@OrderBy`` acts as an implicit ORDER BY clause for the given
-   fields, that is appended to all the explicitly given ORDER BY
-   items.
--  All collections of the ordered type are always retrieved in an
-   ordered fashion.
--  To keep the database impact low, these implicit ORDER BY items
-   are only added to an DQL Query if the collection is fetch joined in
-   the DQL query.
-
-Given our previously defined example, the following would not add
-ORDER BY, since g is not fetch joined:
+鉴于我们之前定义的示例，以下内容不会添加 ``ORDER BY``，因为 ``g`` 不是提取联接：
 
 .. code-block:: sql
 
     SELECT u FROM User u JOIN u.groups g WHERE SIZE(g) > 10
 
-However the following:
+但是以下内容：
 
 .. code-block:: sql
 
     SELECT u, g FROM User u JOIN u.groups g WHERE u.id = 10
 
-...would internally be rewritten to:
+......将在内部重写为：
 
 .. code-block:: sql
 
     SELECT u, g FROM User u JOIN u.groups g WHERE u.id = 10 ORDER BY g.name ASC
 
-You can reverse the order with an explicit DQL ORDER BY:
+你可以使用显式的DQL ``ORDER BY`` 来逆向排序：
 
 .. code-block:: sql
 
     SELECT u, g FROM User u JOIN u.groups g WHERE u.id = 10 ORDER BY g.name DESC
 
-...is internally rewritten to:
+......将在内部被重写为：
 
 .. code-block:: sql
 
     SELECT u, g FROM User u JOIN u.groups g WHERE u.id = 10 ORDER BY g.name DESC, g.name ASC
-
-
