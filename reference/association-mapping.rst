@@ -3,7 +3,7 @@
 
 本章介绍了对象之间的映射关联。
 
-你将始终使用对象的引用而不是在代码中使用外键，而Doctrine将在内部将这些引用转换为外键。
+你将始终使用对象的引用而不是在代码中使用外键，Doctrine将在内部将这些引用转换为外键。
 
 - 一个由外键代表的对单个对象的引用。
 - 一个由指向持有集合的对象的许多外键代表的对象集合
@@ -11,14 +11,14 @@
 本章分为三个不同的部分。
 
 - 给出了所有可能的关联映射的用例的列表。
-- 解释了 :ref:`association_mapping_defaults`，简化了示例。
+- 解释了 :ref:`association_mapping_defaults`，用以简化示例。
 - 引入了包含关联实体的 :ref:`collections`。
 
 处理关联关系的一个技巧是从 **左** 到 **右** 读取关系，其中 *左* 这个词指的是当前实体。例如：
 
-- ``OneToMany`` - 当前实体的 *一个* 实例具有 *许多* 指向已引用(refered)实体的实例（引用）。
-- ``ManyToOne`` - 当前实体的 *许多* 实例引用已引用(refered)实体的 *一个* 实例。
-- ``OneToOne`` - 当前实体的 *一个* 实例引用已引用(refered)实体的 *一个* 实例。
+- ``OneToMany`` - 当前实体的 *一个* 实例具有 *许多* 指向被引用(refered)实体的实例（引用）。
+- ``ManyToOne`` - 当前实体的 *许多* 实例引用被引用(refered)实体的 *一个* 实例。
+- ``OneToOne`` - 当前实体的 *一个* 实例引用被引用(refered)实体的 *一个* 实例。
 
 请参阅下面的所有可能的关联关系。
 
@@ -258,7 +258,7 @@
     ALTER TABLE Cart ADD FOREIGN KEY (customer_id) REFERENCES Customer(id);
 
 我们可以选择将 ``inversedBy`` 属性放置在哪一方。
-因为它放置在 ``Cart`` 类上，则意味着它是关系的拥有方，因此持有外键。
+因为它放置在 ``Cart`` 类上，则意味着它是关系的 *拥有方*，因此持有外键。
 
 自引用的一对一
 ----------------------------
@@ -1020,7 +1020,7 @@ MySQL的模式与上面的 *单向多对多* 示例完全相同。
 
 PHP数组大多数情况下都很好用，但不幸的是，缺少使它们适合在ORM上下文中进行延迟加载的功能。
 这就是为什么在本手册中的多值关联的所有示例中，我们使用了一个 ``ArrayCollection``。
-该默认实现了 ``Collection`` 接口，并且这两个类都定义在 ``Doctrine\Common\Collections`` 命名空间下。
+该类默认实现了 ``Collection`` 接口，并且这两个类都定义在 ``Doctrine\Common\Collections`` 命名空间下。
 一个集合实现了PHP的 ``ArrayAccess``、``Traversable`` 以及 ``Countable`` 接口.
 
 .. note::

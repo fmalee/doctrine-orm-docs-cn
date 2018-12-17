@@ -39,7 +39,7 @@
     $article2 = $entityManager->find('CMS\Article', 1234);
     echo $article2->getHeadline();
 
-在这个示例中，该文章被从实体管理器访问两次，但在中间进行了修改。
+在这个示例中，该文章从实体管理器被访问两次，但在中间进行了修改。
 Doctrine2实现了这一点，并且只会让你访问ID为 ``1234`` 的文章的一个实例，无论你多频繁的从
 ``EntityManager`` 中检索它，甚至无论你使用何种 ``Query`` 方法（``find``、``Repository Finder`` 或 ``DQL``）。
 这称为 **标识映射** 模式，这意味着Doctrine会保留每个实体的一个映射以及每个PHP请求检索到的ID，并不断返回相同的实例。
@@ -96,8 +96,8 @@ Doctrine2实现了这一点，并且只会让你访问ID为 ``1234`` 的文章�
 此代码仅检索 ``id`` 为 ``1`` 的 ``Article`` 实例，该实例针对数据库中的 ``articles`` 表执行单个 ``SELECT`` 语句。
 你仍然可以访问已关联的 ``author`` 和 ``comments`` 属性以及它们包含的已关联对象。
 
-这通过利用延迟加载模式来工作。而不是向你传回一个真正的 ``Author`` 实例和一个 ``comments``
-集合，Doctrine将为你创建相应的代理实例。
+这是通过利用延迟加载模式来工作的。Doctrine不是向你传回一个真正的 ``Author`` 实例和一个 ``comments``
+集合，而是为你创建相应的代理实例。
 只有当你第一次访问这些代理时，才会通过 ``EntityManager`` 从数据库中加载它们的状态。
 
 这种延迟加载过程发生在幕后，隐藏在你的代码之外。请考虑以下代码：
@@ -120,7 +120,7 @@ Doctrine2实现了这一点，并且只会让你访问ID为 ``1234`` 的文章�
         echo $comment->getText() . "\n\n";
     }
 
-    // Article::$comments 会通过 Collection接口的 instanceof 测试
+    // Article::$comments 会通过 Collection 接口的 instanceof 测试
     // 但它无法通过 ArrayCollection 接口的测试
     if ($article->getComments() instanceof \Doctrine\Common\Collections\Collection) {
         echo "This will always be true!";
@@ -148,14 +148,14 @@ Doctrine2实现了这一点，并且只会让你访问ID为 ``1234`` 的文章�
 .. warning::
 
     遍历延迟加载的部分的对象图表将很容易触发大量的SQL查询，并且如果习惯性很大，将会表现不佳。
-    确保尽可能高效地使用DQL以提取联接所需的对象图标的所有部分。
+    确保尽可能高效地使用DQL以提取联接所需的对象图表的所有部分。
 
 持久化实体
 -------------------
 
 通过将一个实体传递给 ``EntityManager#persist($entity)`` 方法，可以使该实体具有持久性。
 通过在某个实体上应用持久化操作，该实体变为 ``MANAGED``，这意味着它的持久性从现在开始由 ``EntityManager`` 管理。
-结果，此类实体的持久状态随后将在 ``EntityManager#flush()`` 调用时与数据库正确同步。
+最后，此类实体的持久状态随后将在 ``EntityManager#flush()`` 调用时与数据库正确同步。
 
 .. note::
 
@@ -202,7 +202,7 @@ Doctrine2实现了这一点，并且只会让你访问ID为 ``1234`` 的文章�
     就像在实体上调用 ``persist`` 一样，``remove`` 操作不会引发在数据库上立即发布 ``SQL DELETE``。
     该实体将在下一次涉及该实体的 ``EntityManager#flush()`` 调用时被删除。
     这意味着仍可以查询计划删除的实体，并将其显示在查询和集合结果中。
-    有关更多信息，请参阅 :ref:`Database and UnitOfWork Out-Of-Sync <workingobjects_database_uow_outofsync>`。
+    有关更多信息，请参阅 :ref:`workingobjects_database_uow_outofsync`。
 
 实例：
 
@@ -241,7 +241,8 @@ Doctrine为每个联接表的记录发出专用 ``DELETE`` 语句，或者它取
    这可以非常有效地从数据库中删除大型对象图表。
 3. 使用 ``onDelete="CASCADE"`` 外键语义可以强制数据库在内部删除所有关联的对象。
    这个策略有点难以控制(right)，但它非常强大和快速。
-   但是你应该知道，使用策略1（``CASCADE=REMOVE``）完全绕过任何外键的 ``onDelete=CASCADE`` 选项，因为Doctrine将显式地获取并删除所有关联的实体。
+   但是你应该知道，使用策略1（``CASCADE=REMOVE``）将完全绕过任何外键的
+   ``onDelete=CASCADE`` 选项，因为Doctrine将显式地获取并删除所有关联的实体。
 
 分离实体
 ------------------
@@ -338,7 +339,7 @@ been modified while being detached.
     of their object-graphs and cascade merge, then you have to call ``EntityManager#clear()`` between the
     successive calls to ``EntityManager#merge()``. Otherwise you might end up with
     multiple copies of the "same" object in the database, however with different ids.
-    如果你需要执行共享其对象图标的某些子部分和级联合并的实体的多个合并，则必须在连续调用 ``EntityManager#merge()`` 之间调用 ``EntityManager#merge()``。否则，你最终可能会在数据库中使用“相同”对象的多个副本，但使用不同的ID。
+    如果你需要执行共享其对象图表的某些子部分和级联合并的实体的多个合并，则必须在连续调用 ``EntityManager#merge()`` 之间调用  ``EntityManager#clear()``。否则，你最终可能会在数据库中标记“相同”对象的多个副本，但具有不同的ID。
 
 .. note::
 
@@ -347,7 +348,7 @@ been modified while being detached.
 与数据库同步
 ---------------------------------
 
-持久化实体的状态与刷新EntityManager提交底层 的数据库同步UnitOfWork。
+持久化实体的状态与一个提交底层 ``UnitOfWork`` 的 ``EntityManager`` 刷新的数据库同步。
 同步涉及将任何更新写入持久实体及其与数据库的关系。
 因此，如关联映射章节中所解释的，基于关系的拥有方所持有的引用来持久保持双向关系。
 The state of persistent entities is synchronized with the database
@@ -471,7 +472,7 @@ in the Association Mapping chapter.
 
 如果实体具有持久状态和标识，但当前未与一个 ``EntityManager`` 关联，则该实体处于 ``DETACHED`` 状态。
 
-如果实体没有持久状态和标识，且当前未与一个 ``EntityManager`` 关联，（例如刚刚通过 ``new ``
+如果实体没有持久状态和标识，且当前未与一个 ``EntityManager`` 关联，（例如刚刚通过 ``new``
 操作符创建的实体），则该实体处于 ``NEW`` 状态。
 
 查询
@@ -483,7 +484,7 @@ in the Association Mapping chapter.
 通过主键
 ~~~~~~~~~~~~~~
 
-查询一个持久对象的最基本方法是通过标识符/主键来使用
+查询一个持久对象的最基本方法是通过 *标识符/主键* 来使用
 ``EntityManager#find($entityName, $id)`` 方法。这是一个例子：
 
 .. code-block:: php

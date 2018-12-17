@@ -7,7 +7,7 @@
 Doctrine2归纳了文档区块注释的概念，以便它们可以用于任何类型的元数据，因此很容易定义新的文档区块注释。
 为了允许涉及更多的注释值并减少与其他文档区块注释发生冲突的可能性，Doctrine2文档区块注释使用另一种语法，该语法受Java5中引入的注释语法的启发。
 
-这些增强的文档区块注释的实现位于 ``Doctrine\Common\Annotations`` 命名空间中，因此是Common软件的一部分。
+这些增强的文档区块注释的实现位于 ``Doctrine\Common\Annotations`` 命名空间中，因此是 ``Common`` 软件包的一部分。
 Doctrine2文档区块注释支持命名空间和嵌套注释等功能。
 Doctrine2 ORM定义了自己的一组文档区块注释，用于提供对象-关系映射的元数据。
 
@@ -69,7 +69,7 @@ Doctrine2 ORM定义了自己的一组文档区块注释，用于提供对象-关
 @Column
 ~~~~~~~
 
-将已注释实例的变量标记为“持久”。它必须在实例变量的PHP文档区块注释中。
+将被注释实例的变量标记为“持久”。它必须在实例变量的PHP文档区块注释中。
 此变量中的任何值都将作为实例变量的“实体类”的生命周期的一部分保存到数据库中并从数据库中加载。
 
 必需属性：
@@ -225,22 +225,17 @@ Doctrine2 ORM定义了自己的一组文档区块注释，用于提供对象-关
 @DiscriminatorColumn
 ~~~~~~~~~~~~~~~~~~~~~
 
-此注释是继承层次结构的最高/超类的可选注释。它指定保存类实际名称的类的详细信息。
+此注释是一个继承层级的顶层/超类的可选注释。它用于指定保存类实际名称的类的详细信息。
 This annotation is an optional annotation for the topmost/super
-class of an inheritance hierarchy. It specifies the details of the
-column which saves the name of the class, which the entity is
-actually instantiated as.
-
-如果未指定此注释，则discriminator列默认为长度 ``255`` 的名为 ``dtype`` 的字符串列。
-If this annotation is not specified, the discriminator column defaults
-to a string column of length 255 called ``dtype``.
+class of an inheritance hierarchy.
+It specifies the details of the column which saves the name of the class, 
+which the entity is actually instantiated as.
+如果未指定此注释，则 ``discriminator`` 列默认为一个长度 ``255``、名为 ``dtype`` 的字符串列。
 
 必需属性：
 
 
--  **name**: The column name of the discriminator. This name is also
-   used during Array hydration as key to specify the class-name.
-   discriminator的列名。在Array水合期间，此名称也用作指定类名的键。
+-  **name**: 鉴别器的列名称。在数组融合期间，此名称也用作指定类名的键。
 
 可选属性：
 
@@ -253,15 +248,9 @@ to a string column of length 255 called ``dtype``.
 @DiscriminatorMap
 ~~~~~~~~~~~~~~~~~~~~~
 
-discriminator映射是继承层次结构中最顶层/超类的必需注释。
-它唯一的参数是一个数组，它定义了应该在数据库中的哪个名称来保存哪个类。
-键是数据库值，值是类，该类可以是完全或非限定类名，具体取决于类是否在命名空间中。
-The discriminator map is a required annotation on the
-topmost/super class in an inheritance hierarchy. Its only argument is an
-array which defines which class should be saved under
-which name in the database. Keys are the database value and values
-are the classes, either as fully- or as unqualified class names
-depending on whether the classes are in the namespace or not.
+鉴别器映射是一个继承层级中顶层/超类的必需注释。
+它唯一的参数是一个数组，它定义了应该在数据库中的使用哪个名称来保存对应的类。
+数组中的键是数据库的表名称，值是对应的类，该类可以是完全或非限定类名，具体取决于该类是否在命名空间中。
 
 .. code-block:: php
 
@@ -376,8 +365,8 @@ depending on whether the classes are in the namespace or not.
 
 可选属性：
 
--  **fields**: Array of @FieldResult, Maps the columns specified in the SELECT list of the query to the properties or fields of the entity class.``@FieldResult`` 数组，将查询的SELECT列表中指定的列映射到实体类的属性或字段。
--  **discriminatorColumn**: Specifies the column name of the column in the SELECT list that is used to determine the type of the entity instance.指定SELECT列表中用于确定实体实例类型的列的列名。
+-  **fields**: Array of @FieldResult, Maps the columns specified in the SELECT list of the query to the properties or fields of the entity class.``@FieldResult`` 数组，将查询的 ``SELECT`` 列表中指定的列映射到实体类的属性或字段。
+-  **discriminatorColumn**: Specifies the column name of the column in the SELECT list that is used to determine the type of the entity instance.指定 ``SELECT`` 列表中用于确定实体实例的类型的列的列名。
 
 .. _annref_field_result:
 
@@ -559,7 +548,7 @@ depending on whether the classes are in the namespace or not.
 此注释用于 :ref:`@ManyToOne <annref_manytoone>`、:ref:`@OneToOne <annref_onetoone>`
 字段的关系上下文中，以及嵌套在 :ref:`@ManyToMany <annref_manytomany>` 内的
 :ref:`@JoinTable <annref_jointable>` 的上下文中。
-此注释不是必需的。如果未指定，则从表和主键的名称中推断出该属性的 *name* 和 *referencedColumnName*。
+此注释不是必需的。如果未指定，则从表和主键的名称中推断出该属性的 ``name`` 和 ``referencedColumnName``。
 
 必需属性：
 
@@ -568,26 +557,14 @@ depending on whether the classes are in the namespace or not.
 
 可选属性：
 
--  **unique**: Determines whether this relation is exclusive between the
-   affected entities and should be enforced as such on the database
-   constraint level. Defaults to false.
-   确定此关系在受影响的实体之间是否是唯一的，并且应在数据库约束级别上强制执行。默认为 ``false``。
--  **nullable**: Determine whether the related entity is required, or if
-   null is an allowed state for the relation. Defaults to true.
-   确定相关实体是否是必需的，或者 ``null`` 是否为此关系的允许状态。默认为 ``true``。
+-  **unique**: 确定此关系在受影响的实体之间是否是唯一的，并且应在数据库约束级别上强制执行。默认为 ``false``。
+-  **nullable**: 确定相关实体是否是必需的，或者 ``null`` 是否为此关系的允许状态。默认为 ``true``。
 -  **onDelete**: 级联动作（数据库级）
--  **columnDefinition**: DDL SQL snippet that starts after the column
-   name and specifies the complete (non-portable!) column definition.
-   This attribute enables the use of advanced RMDBS features. Using
-   this attribute on @JoinColumn is necessary if you need slightly
-   different column definitions for joining columns, for example
-   regarding NULL/NOT NULL defaults.
-   However by default a "columnDefinition" attribute on :ref:`@Column <annref_column>` also sets the related @JoinColumn's columnDefinition. This is necessary to make foreign keys work.
-   在列名后面开始并指定完整（非可移植！）列定义的DDL SQL片段。
+-  **columnDefinition**: 在列名后面开始并指定完整（非可移植！）列定义的DDL SQL片段。
    此属性允许使用高级RMDBS功能。如果你需要稍微不同的列定义来连接列，则必须在
    ``@JoinColumn`` 上使用此属性，例如，关于 ``NULL`` / ``NOT NULL`` 默认值。
    但是，默认情况下，:ref:`@Column <annref_column>` 上的一个 ``columnDefinition``
-   属性也会设置相关的 ``@JoinColumn`` 的 ``columnDefinition``。这是使外键工作所必需的。
+   属性也会设置相关的 ``@JoinColumn`` 的 ``columnDefinition``。这是使外键生效所必需的配置。
 
 示例：
 
@@ -623,7 +600,7 @@ depending on whether the classes are in the namespace or not.
 
 -  **name**: 连接表的名称
 -  **joinColumns**: 一个 ``@JoinColumn`` 注释数组，用于描述拥有方实体表和连接表之间的连接关系。
--  **inverseJoinColumns**: 一个 ``@JoinColumn`` 注释数组，用于描述反方实体表和连接表之间的连接关系。
+-  **inverseJoinColumns**: 一个 ``@JoinColumn`` 注释数组，用于描述方从属方实体表和连接表之间的连接关系。
 
 示例：
 
@@ -644,20 +621,19 @@ depending on whether the classes are in the namespace or not.
 @ManyToOne
 ~~~~~~~~~~~~~~
 
-定义已注释的实例变量保持一个描述两个实体之间多对一关系的引用。
-Defines that the annotated instance variable holds a reference that describes a many-to-one relationship between two entities.
+定义被注释的实例变量持有一个描述两个实体之间多对一关系的引用。
 
 必需属性：
 
 -  **targetEntity**: 引用的目标实体的FQCN。
-   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领头的反斜杠！
 
 可选属性：
 
 
 -  **cascade**: 级联选项
 -  **fetch**: ``LAZY`` 或 ``EAGER`` 之一
--  **inversedBy**: - 该属性用于指定此关系的反方实体中的字段。
+-  **inversedBy**: - 该属性用于指定此关系的从属方实体中的字段。
 
 示例：
 
@@ -674,29 +650,21 @@ Defines that the annotated instance variable holds a reference that describes a 
 @ManyToMany
 ~~~~~~~~~~~~~~
 
-定义带注释的实例变量在两个实体之间保持多对多关系。
-:ref:`@JoinTable <annref_jointable>` 是一个附加的可选注释，它使用两个相关实体的表和名称具有合理的默认配置值。
-Defines that the annotated instance variable holds a many-to-many relationship
-between two entities. :ref:`@JoinTable <annref_jointable>` is an
-additional, optional annotation that has reasonable default
-configuration values using the table and names of the two related
-entities.
+定义被注释的实例变量持有一个描述两个实体之间多对多关系的引用。
+:ref:`@JoinTable <annref_jointable>` 是一个附加、可选的注释，它使用两个相关实体的表和名称来配置合理的默认值。
 
 必需属性：
 
 -  **targetEntity**: 引用的目标实体的FQCN。
-   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领头的反斜杠！
 
 可选属性：
 
--  **mappedBy**: This option specifies the property name on the
-   targetEntity that is the owning side of this relation. It is a
-   required attribute for the inverse side of a relationship.
-   此选项指定 ``targetEntity`` 上的属性名称，该属性是此关系的拥有方。它是反方关系的必需属性。
--  **inversedBy**: 该属性用于指定此关系的反方实体中的字段。
+-  **mappedBy**: 此选项指定 ``targetEntity`` (此关系的拥有方)上的属性名称。它是从属方关系的必需属性。
+-  **inversedBy**: 该属性用于指定此关系的从属方实体中的字段。
 -  **cascade**: 级联选项
 -  **fetch**: ``LAZY``、``EXTRA_LAZY`` 或 ``EAGER`` 之一
--  **indexBy**: Index the collection by a field on the target entity.通过目标实体上的字段索引集合。
+-  **indexBy**: 通过目标实体上的字段来索引集合。
 
 .. note::
 
@@ -704,7 +672,8 @@ entities.
     be the owning side (the side that defines the @JoinTable and/or
     does not make use of the mappedBy attribute, thus using a default
     join table).
-    对于双向的 ``ManyToMany`` 关系，任何一方都可能是拥有方（定义@JoinTable的一方和/或不使用mappedBy属性，因此使用默认连接表）。
+    对于双向的 ``ManyToMany`` 关系，任何一方都可以是拥有方（定义
+    ``@JoinTable`` 的一方 *和/或* 不使用 ``mappedBy`` 属性，因此使用默认连接表）。
 
 示例：
 
@@ -734,12 +703,8 @@ entities.
 @MappedSuperclass
 ~~~~~~~~~~~~~~~~~~~~~
 
-映射的超类是一个抽象或具体的类，它为其子类提供持久的实体状态和映射信息，但它本身不是一个实体。
-此注释在类的文档区块上指定，没有其他属性。
-A mapped superclass is an abstract or concrete class that provides
-persistent entity state and mapping information for its subclasses,
-but which is not itself an entity. This annotation is specified on
-the Class docblock and has no additional attributes.
+被映射的超类是一个抽象或具体的类，它为其子类提供持久的实体状态和映射信息，但它本身不是一个实体。
+此注释在类的文档区块上指定，并且没有其他属性。
 
 ``@MappedSuperclass`` 注释不能与 ``@Entity`` 一起使用。
 有关映射超类限制的更多详细信息，请参阅 :doc:`继承映射 <inheritance-mapping>` 章节。
@@ -759,7 +724,7 @@ the Class docblock and has no additional attributes.
      */
     class MappedSuperclassBase
     {
-        // ... fields and methods
+        // ... 字段和方法
     }
 
     /**
@@ -767,7 +732,7 @@ the Class docblock and has no additional attributes.
      */
     class EntitySubClassFoo extends MappedSuperclassBase
     {
-        // ... fields and methods
+        // ... 字段和方法
     }
 
 .. _annref_named_native_query:
@@ -779,13 +744,13 @@ the Class docblock and has no additional attributes.
 
 必需属性：
 
--  **name**: The name used to refer to the query with the EntityManager methods that create query objects.用于通过创建查询对象的EntityManager方法引用查询的名称。
+-  **name**: The name used to refer to the query with the EntityManager methods that create query objects.用于引用通过创建查询对象的EntityManager方法的查询的名称。
 -  **query**: SQL查询字符串
 
 可选属性：
 
 -  **resultClass**: 结果的类。
--  **resultSetMapping**: The name of a SqlResultSetMapping, as defined in metadata.SqlResultSetMapping的名称，如元数据中所定义。
+-  **resultSetMapping**: 一个在元数据中定义的 ``SqlResultSetMapping`` 的名称。
 
 示例：
 
@@ -844,29 +809,21 @@ the Class docblock and has no additional attributes.
 @OneToOne
 ~~~~~~~~~~~~~~
 
-``@OneToOne`` 注释几乎与 :ref:`@ManyToOne <annref_manytoone>` 一样，只能指定一个附加选项。
-@JoinColumn的配置默认值 使用目标实体表，主键列名也适用于此处。
-The @OneToOne annotation works almost exactly as the
-:ref:`@ManyToOne <annref_manytoone>` with one additional option which can
-be specified. The configuration defaults for
-:ref:`@JoinColumn <annref_joincolumn>` using the target entity table and
-primary key column names apply here too.
+``@OneToOne`` 注释几乎与 :ref:`@ManyToOne <annref_manytoone>` 一样，除了只能指定一个附加选项。
+使用目标实体的表和主键列名的 ``@JoinColumn`` 的配置默认值也适用于此处。
 
 必需属性：
 
 -  **targetEntity**: 引用的目标实体的FQCN。
-   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领头的反斜杠！
 
 可选属性：
 
 
 -  **cascade**: 级联选项
 -  **fetch**: ``LAZY`` 或 ``EAGER`` 之一
--  **orphanRemoval**: Boolean that specifies if orphans, inverse
-   OneToOne entities that are not connected to any owning instance,
-   should be removed by Doctrine. Defaults to false.
-   布尔值，用于指定是否应该由Doctrine删除孤立(orphan)，即未连接到任何拥有方实例的反向一对一实体。默认为 ``false``。
--  **inversedBy**: 该属性用于指定此关系的反方实体中的字段。
+-  **orphanRemoval**: 布尔值，用于指定是否应该由Doctrine删除孤立(orphan)，孤立是指未连接到任何拥有方实例的从属方一对一实体。默认为 ``false``。
+-  **inversedBy**: 该属性用于指定此关系的从属方实体中的字段。
 
 示例：
 
@@ -886,24 +843,16 @@ primary key column names apply here too.
 
 必需属性：
 
-
 -  **targetEntity**: 引用的目标实体的FQCN。
-   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领先的反斜杠！
+   如果两个类都在同一命名空间中，则可以是非限定类名。*重要提示*：没有领头的反斜杠！
 
 可选属性：
 
-
 -  **cascade**: 级联选项
--  **orphanRemoval**: Boolean that specifies if orphans, inverse
-   OneToOne entities that are not connected to any owning instance,
-   should be removed by Doctrine. Defaults to false.
-   布尔值，用于指定是否应该由Doctrine删除孤立(orphan)，即未连接到任何拥有方实例的反向一对一实体。默认为 ``false``。
--  **mappedBy**: This option specifies the property name on the
-   targetEntity that is the owning side of this relation. Its a
-   required attribute for the inverse side of a relationship.
-   此选项指定targetEntity上的属性名称，该属性是此关系的拥有方。它是关系反面的必需属性。
+-  **orphanRemoval**: 布尔值，用于指定是否应该由Doctrine删除孤立(orphan)，孤立是指未连接到任何拥有方实例的从属方一对一实体。默认为 ``false``。
+-  **mappedBy**: 此选项指定 ``targetEntity`` (此关系的拥有方)上的属性名称。它是从属方关系的必需属性。
 -  **fetch**: ``LAZY``、``EXTRA_LAZY`` 或 ``EAGER`` 之一。
--  **indexBy**: Index the collection by a field on the target entity.通过目标实体上的字段索引集合。
+-  **indexBy**: 通过目标实体上的字段来索引集合。
 
 示例：
 

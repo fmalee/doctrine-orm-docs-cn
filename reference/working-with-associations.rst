@@ -343,8 +343,8 @@ Doctrine2通过级联某些操作提供了一个传递(transitive)持久性的�
 每个关联到其他实体或实体的集合的关联都可以被配置为自动化将以下操作级联到相关实体：
 ``persist``、``remove``、``merge``、``detach``、``refresh`` 以及 ``all``。
 
- ``cascade: persist`` 的主要用例是避免将相关实体“暴露”到PHP应用中。
- 继续本章的 ``User-Comment`` 示例，这是在控制器中创建新用户和新评论的方式（未设置 ``cascade: persist``）：
+``cascade: persist`` 的主要用例是避免将相关实体“暴露”到PHP应用中。
+继续本章的 ``User-Comment`` 示例，这是在控制器中创建新用户和新评论的方式（未设置 ``cascade: persist``）：
 
 .. code-block:: php
 
@@ -353,7 +353,7 @@ Doctrine2通过级联某些操作提供了一个传递(transitive)持久性的�
     $user->addComment($myFirstComment);
 
     $em->persist($user);
-    $em->persist($myFirstComment); // 必需的, 如果为设置 `cascade: persist` 的话
+    $em->persist($myFirstComment); // 必需的, 如果未设置 `cascade: persist` 的话
     $em->flush();
 
 请注意，``Comment`` 实体是在控制器中进行了实例化。
@@ -433,7 +433,7 @@ Doctrine2通过级联某些操作提供了一个传递(transitive)持久性的�
     确保权衡你定义的每个级联操作的优点和缺点。
 
     相比依赖数据库级别的级联操作来完成删除操作，你可以使用
-    :doc:` onDelete选项 <working-with-objects>` 来配置每个联接列。
+    :doc:`onDelete选项 <working-with-objects>` 来配置每个联接列。
 
 即使自动级联很方便，也应小心使用。不要盲目地应用 ``cascade=all``
 到所有关联，因为它会不必要地降低你的应用的性能。
@@ -445,8 +445,8 @@ Doctrine2通过级联某些操作提供了一个传递(transitive)持久性的�
 还有其他语义适用于 *级联持久* 操作。在每次的 ``flush()``
 操作期间，Doctrine会检测任何集合中是否有新实体，并且可能发生三种情况：
 
-1. 一个集合中标记为 ``cascade: persist`` 的新实体将由Doctrine直接持久化。
-2. 一个集合中标未记为 ``cascade: persist`` 的新实体将生成一个异常并回滚 ``flush()`` 操作。
+1. 一个集合中的标记为 ``cascade: persist`` 的新实体将由Doctrine直接持久化。
+2. 一个集合中的未标记为 ``cascade: persist`` 的新实体将生成一个异常并回滚 ``flush()`` 操作。
 3. 忽略没有新实体的集合。
 
 此概念称为 **可达性持久**：只要将关联定义为 ``cascade: persist``，在已管理实体上发现的新实体就会自动持久化保存。

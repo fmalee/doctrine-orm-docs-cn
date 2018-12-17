@@ -35,11 +35,8 @@
 -  ``QueryBuilder::DELETE``, 返回值为 ``1``
 -  ``QueryBuilder::UPDATE``, 返回值为 ``2``
 
-你的 ``DQL`` 完成构建后，可以检索已关联 ``EntityManager`` 的当前
-``QueryBuilder``、``DQL`` 甚至一个 ``Query`` 对象。
-It is possible to retrieve the associated ``EntityManager`` of the
-current ``QueryBuilder``, its DQL and also a ``Query`` object when
-you finish building your DQL.
+你的DQL构建完成后，就可以检索当前
+``QueryBuilder`` 的已关联 ``EntityManager``、它的 ``DQL`` 字符串甚至一个 ``Query`` 对象。
 
 .. code-block:: php
 
@@ -69,12 +66,7 @@ you finish building your DQL.
 
 为了简化在Doctrine中构建一个查询的方式，你可以利用辅助方法。
 对于所有基本代码，有一组有用的方法可以简化程序员的生活。
-为了说明如何使用它们，下面是使用 ``QueryBuilder`` 辅助方法来重写的相同示例6：
-To simplify even more the way you build a query in Doctrine, you can take
-advantage of Helper methods. For all base code, there is a set of
-useful methods to simplify a programmer's life. To illustrate how
-to work with them, here is the same example 6 re-written using
-``QueryBuilder`` helper methods:
+为了说明如何使用它们，下面是使用 ``QueryBuilder`` 辅助方法来重写的示例6(在下面章节)：
 
 .. code-block:: php
 
@@ -85,9 +77,9 @@ to work with them, here is the same example 6 re-written using
        ->where('u.id = ?1')
        ->orderBy('u.name', 'ASC');
 
-``QueryBuilder`` 辅助方法被认为是构建DQL查询的标准方法。
-虽然支持基于字符串的查询，但应避免使用它。我们非常鼓励你使用 ``$qb->expr()->*`` 方法。
-这是一个转换后的示例8，用来建议构建查询的标准方式：
+``QueryBuilder`` 辅助方法被认为是构建DQL查询的 **标准方法**。
+虽然支持基于字符串的查询，但应避免使用它。我们非常 *鼓励* 你使用 ``$qb->expr()->*`` 方法。
+这是一个转换后的示例8(在下面章节)，用来建议构建查询的标准方式：
 
 .. code-block:: php
 
@@ -479,7 +471,7 @@ Doctrine支持将参数动态绑定到查询，类似于准备（preparing）查
 
     // $qb 为 QueryBuilder 实例
     $qb->addCriteria($criteria);
-    // then execute your query like normal
+    // 然后像平常一样执行你的查询
 
 低级API
 ^^^^^^^^^^^^^
