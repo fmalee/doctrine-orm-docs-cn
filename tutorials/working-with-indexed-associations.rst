@@ -1,37 +1,34 @@
-Working with Indexed Associations
+使用索引关联
 =================================
 
 .. note::
 
-    This feature is available from version 2.1 of Doctrine.
+    此功能从Doctrile2.1版以后可用。
 
-Doctrine 2 collections are modelled after PHPs native arrays. PHP arrays are an ordered hashmap, but in
-the first version of Doctrine keys retrieved from the database were always numerical unless ``INDEX BY``
-was used. Starting with Doctrine 2.1 you can index your collections by a value in the related entity.
-This is a first step towards full ordered hashmap support through the Doctrine ORM.
-The feature works like an implicit ``INDEX BY`` for the selected association but has several
-downsides also:
+Doctrine2的集合以PHP原生数组为模型。
+PHP数组是一个有序的散列映射(hashmap)，但是在Doctrine的第一个版本中，从数据库中检索的键总是数字的，除非使用 ``INDEX BY``。
+从Doctrine2.1开始，你可以通过相关实体中的一个值来索引集合。这是通过Doctrine ORM实现完全有序的散列映射支持的第一步。
+该功能的作用类似于所选关联的一个隐含 ``INDEX BY``，但也有几个缺点：
 
--  You have to manage both the key and field if you want to change the index by field value.
--  On each request the keys are regenerated from the field value, and not from the previous collection key.
--  Values of the Index-By keys are never considered during persistence. They only exist for accessing purposes.
--  Fields that are used for the index by feature **HAVE** to be unique in the database. The behavior for multiple entities
-   with the same index-by field value is undefined.
+-  如果要按字段值更改索引，则必须同时管理键和字段。
+-  在每个请求上，键都是从字段值重新生成的，而不是从前一个集合的键重新生成的。
+-  在持久性过程中永远不会考虑索引(Index-By)键的值。它们仅用于访问目的。
+-  用作索引功能的字段 **必须** 在数据库中是唯一的。具有相同索引字段值的多个实体的行为是未定义的。
 
-As an example we will design a simple stock exchange list view. The domain consists of the entity ``Stock``
-and ``Market`` where each Stock has a symbol and is traded on a single market. Instead of having a numerical
-list of stocks traded on a market they will be indexed by their symbol, which is unique across all markets.
+作为示例，我们将设计一个简单的股票交易所视图。
+该域包括 ``Stock`` 和 ``Market`` 实体，每个 ``Stock`` 都有一个股票代码，并且在单一市场进行交易。
+不是持有在一个市场上交易的股票的数量清单，而是使用它们的股票代码进行索引，该代码在所有市场中都是独一无二的。
 
-Mapping Indexed Associations
+映射索引关联
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can map indexed associations by adding:
+你可以通过添加以下内容来映射索引关联：
 
-    * ``indexBy`` attribute to any ``@OneToMany`` or ``@ManyToMany`` annotation.
-    * ``index-by`` attribute to any ``<one-to-many />`` or ``<many-to-many />`` xml element.
-    * ``indexBy:`` key-value pair to any association defined in ``manyToMany:`` or ``oneToMany:`` YAML mapping files.
+    * 任何 ``@OneToMany`` 或 ``@ManyToMany`` 注释的 ``indexBy`` 属性。
+    * 任何 ``<one-to-many />`` 或 ``<many-to-many />`` xml元素的 ``index-by`` 属性。
+    * 在 ``manyToMany:`` 或 ``oneToMany:`` YAML映射文件定义的任何关联的 ``indexBy:`` 键-值对。
 
-The code and mappings for the Market entity looks like this:
+``Market`` 实体的代码和映射如下所示：
 
 .. configuration-block::
     .. code-block:: php
@@ -138,12 +135,11 @@ The code and mappings for the Market entity looks like this:
               mappedBy: market
               indexBy: symbol
 
-Inside the ``addStock()`` method you can see how we directly set the key of the association to the symbol,
-so that we can work with the indexed association directly after invoking ``addStock()``. Inside ``getStock($symbol)``
-we pick a stock traded on the particular market by symbol. If this stock doesn't exist an exception is thrown.
+在 ``addStock()`` 方法内部，你可以看到我们如何直接将关联的键设置为股票代码，以便我们可以在调用
+``addStock()`` 后直接使用该索引关联。
+在 ``getStock($symbol)`` 内部，我们通过股票代码挑选一个在特定市场上交易的股票。如果此股票不存在，则抛出一个异常。
 
-The ``Stock`` entity doesn't contain any special instructions that are new, but for completeness
-here are the code and mappings for it:
+``Stock`` 实体不包含任何新的特殊指令，但为了完整性，这里它的是代码和映射：
 
 .. configuration-block::
     .. code-block:: php
@@ -222,13 +218,12 @@ here are the code and mappings for it:
               targetEntity: Market
               inversedBy: stocks
 
-Querying indexed associations
+查询索引关联
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that we defined the stocks collection to be indexed by symbol, we can take a look at some code
-that makes use of the indexing.
+现在我们已经定义了按股票代码来索引的股票集合，我们可以看看一些利用此索引的代码。
 
-First we will populate our database with two example stocks traded on a single market:
+首先，我们将使用在单个市场上交易的两个示例股票来填充我们的数据库：
 
 .. code-block:: php
 
@@ -244,32 +239,31 @@ First we will populate our database with two example stocks traded on a single m
     $em->persist($stock2);
     $em->flush();
 
-This code is not particular interesting since the indexing feature is not yet used. In a new request we could
-now query for the market:
+此代码并不特别有趣，因为尚未使用索引功能。在新请求中，我们现在可以查询该市场：
 
 .. code-block:: php
 
     <?php
-    // $em is the EntityManager
+    // $em 为 EntityManager 的实例
     $marketId = 1;
     $symbol = "AAPL";
-    
+
     $market = $em->find("Doctrine\Tests\Models\StockExchange\Market", $marketId);
 
-    // Access the stocks by symbol now:
+    // 现在按代码来访问股票：
     $stock = $market->getStock($symbol);
 
-    echo $stock->getSymbol(); // will print "AAPL"
+    echo $stock->getSymbol(); // 将会打印 "AAPL"
 
-The implementation of ``Market::addStock()``, in combination with ``indexBy``, allows us to access the collection
-consistently by the Stock symbol. It does not matter if Stock is managed by Doctrine or not.
+``Market::addStock()`` 的实现，与 ``indexBy`` 组合，使我们能够始终通过股票代码来访问集合。
+``Stock`` 是否由Doctrine管理并不重要。
 
-The same applies to DQL queries: The ``indexBy`` configuration acts as implicit "INDEX BY" to a join association.
+这同样适用于DQL查询：``indexBy`` 配置充当连接关联的一个隐式 ``INDEX BY``。
 
 .. code-block:: php
 
     <?php
-    // $em is the EntityManager
+    // $em 为 EntityManager 的实例
     $marketId = 1;
     $symbol = "AAPL";
 
@@ -278,19 +272,17 @@ The same applies to DQL queries: The ``indexBy`` configuration acts as implicit 
                  ->setParameter(1, $marketId)
                  ->getSingleResult();
 
-    // Access the stocks by symbol now:
+    // 现在按代码来访问股票：
     $stock = $market->getStock($symbol);
 
-    echo $stock->getSymbol(); // will print "AAPL"
+    echo $stock->getSymbol(); // 将会打印 "AAPL"
 
-If you want to use ``INDEX BY`` explicitly on an indexed association you are free to do so. Additionally,
-indexed associations also work with the ``Collection::slice()`` functionality, even if the association's fetch mode is
-LAZY or EXTRA_LAZY.
+如果要在索引关联上显式使用 ``INDEX BY``，则可以自由使用。
+此外，即使关联的提取模式为 ``LAZY`` 或 ``EXTRA_LAZY``，索引关联也可以使用 ``Collection::slice()`` 函数。
 
-Outlook into the Future
+展望未来
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-For the inverse side of a many-to-many associations there will be a way to persist the keys and the order
-as a third and fourth parameter into the join table. This feature is discussed in `DDC-213 <http://www.doctrine-project.org/jira/browse/DDC-213>`_
-This feature cannot be implemented for one-to-many associations, because they are never the owning side.
-
+对于一个多对多关联的从属方，这里有一种方法可以将键和排序作为第三和第四参数持久化到连接表中。
+在 `DDC-213 <http://www.doctrine-project.org/jira/browse/DDC-213>`_
+中讨论了此功能。此功能无法在一对多关联中实现，因为它们从来不是拥有方。
