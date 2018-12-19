@@ -46,10 +46,8 @@ Github：https://github.com/doctrine/doctrine2/tree/master/docs
 - `Persistence by Reachability`：可达性持久
 - `Orphan Removal`：孤立移除
 - `Slice`：切片
-- ``：
-- ``：
-- ``：
-- ``：
+- `Extra Lazy`：超级延迟
+- `Embeddable`：可嵌入类
 
 ## 生成主题
 
