@@ -671,7 +671,7 @@ and Object-Relational Mapping.
     Consistency of bi-directional references on the inverse side of a
     relation have to be managed in userland application code. Doctrine
     cannot magically update your collections to be consistent.
-    必须在用户态应用程序代码中管理关系反面的双向引用的一致性。Doctrine不能神奇地更新你的集合以保持一致。
+    必须在用户态应用代码中管理关系反面的双向引用的一致性。Doctrine不能神奇地更新你的集合以保持一致。
 
 在用户和错误的情况下，我们来自用户的指定和报告的错误的来回，使得这种关系是双向的。我们必须更改代码以确保双向引用的一致性：
 In the case of Users and Bugs we have references back and forth to
@@ -1105,7 +1105,7 @@ automatically when ``flush()`` is called.
 Bug列表
 ~~~~~~~~~~~~
 
-使用前面的示例，我们可以填充数据库。但是，我们现在需要讨论如何查询底层映射器以获取所需的视图表示。打开应用程序时，可以通过列表视图对错误进行分页，这是第一个只读用例：
+使用前面的示例，我们可以填充数据库。但是，我们现在需要讨论如何查询底层映射器以获取所需的视图表示。打开应用时，可以通过列表视图对错误进行分页，这是第一个只读用例：
 Using the previous examples we can fill up the database quite a
 bit. However, we now need to discuss how to query the underlying
 mapper for the required view representations. When opening the
@@ -1570,7 +1570,7 @@ As an example here is the code of the first use case "List of Bugs":
         echo "\n";
     }
 
-使用EntityRepositories可以避免将模型与特定查询逻辑耦合。你还可以在整个应用程序中轻松地重用查询逻辑。
+使用EntityRepositories可以避免将模型与特定查询逻辑耦合。你还可以在整个应用中轻松地重用查询逻辑。
 Using EntityRepositories you can avoid coupling your model with specific query logic.
 You can also re-use query logic easily throughout your application.
 
